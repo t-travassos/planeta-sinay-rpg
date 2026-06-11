@@ -134,6 +134,23 @@
   .read-only [data-editable] textarea,
   .read-only [data-editable] select { background: #f1eee9; }
 
+  /* Foco visível (acessibilidade) */
+  .skill-dot { cursor: pointer; }
+  .skill-dot:focus-visible { outline: 3px solid #6d28d9; outline-offset: 2px; }
+  #lifeInput:focus-visible, #sanityInput:focus-visible, #infectInput:focus-visible {
+    box-shadow: 0 0 0 4px rgba(124,255,79,.55); border-radius: .5rem;
+  }
+
+  /* Toast acessível (mantém no DOM p/ aria-live; some por opacidade, não display) */
+  #toast { transition: opacity .18s ease; }
+  #toast.toast-hide { opacity: 0; pointer-events: none; }
+
+  /* Respeita usuários que pedem menos movimento */
+  @media (prefers-reduced-motion: reduce) {
+    .goo-droplet, .pulse-dot::after, .slime-overlay { animation: none !important; }
+    .monsterShake { animation: none !important; }  /* mantém o filtro de cor, sem tremor */
+  }
+
   .hidden-i { display: none !important; }
 </style>
 </head>
@@ -397,7 +414,7 @@
         <i data-lucide="graduation-cap" class="w-6 h-6 text-grape"></i>
         <h2 class="text-xl font-bold text-ink">Treinamentos &amp; Competências</h2>
       </div>
-      <div id="trainPoolPill" class="cartoon-sm bg-emerald-500 text-white px-3 py-1.5 text-sm font-bold">
+      <div id="trainPoolPill" class="cartoon-sm bg-emerald-700 text-white px-3 py-1.5 text-sm font-bold">
         Treino: <span id="trainPool">10</span> / <span id="trainTotal">10</span>
       </div>
     </div>
@@ -429,7 +446,7 @@
   <div class="cartoon bg-paper p-5 max-w-md w-full">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-xl font-bold text-ink flex items-center gap-2"><i data-lucide="share-2" class="w-5 h-5"></i> Compartilhar Siny</h3>
-      <button data-close="shareModal" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+      <button data-close="shareModal" aria-label="Fechar" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
     </div>
     <p class="text-sm text-ink/70 font-semibold mb-2">Link de visualização (modo espectador):</p>
     <input id="shareLink" class="cartoon-input px-3 py-2 w-full text-sm mb-3" readonly />
@@ -448,7 +465,7 @@
   <div class="cartoon bg-paper p-5 max-w-sm w-full">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-xl font-bold text-ink flex items-center gap-2"><i data-lucide="lock" class="w-5 h-5"></i> Mesa do Narrador</h3>
-      <button data-close="gmGate" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+      <button data-close="gmGate" aria-label="Fechar" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
     </div>
     <p class="text-sm text-ink/70 font-semibold mb-2">Senha de segurança do Narrador:</p>
     <input id="gmPass" type="password" class="cartoon-input px-3 py-2 w-full mb-2" placeholder="••••••••" />
@@ -462,7 +479,7 @@
   <div class="cartoon bg-paper p-5 max-w-3xl w-full my-4">
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
       <h3 class="text-xl font-bold text-ink flex items-center gap-2"><i data-lucide="users" class="w-6 h-6 text-grape"></i> Sinies Ativos na Mesa</h3>
-      <button data-close="gmHub" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+      <button data-close="gmHub" aria-label="Fechar" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
     </div>
     <p class="text-sm text-ink/70 font-semibold mb-3">Controle remoto em tempo real. Aplique efeitos ou abra a ficha pra edição direta.</p>
     <div id="gmList" class="space-y-3 max-h-[65vh] overflow-auto pr-1"></div>
@@ -470,7 +487,7 @@
 </div>
 
 <!-- ================= TOAST ================= -->
-<div id="toast" class="hidden-i fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] cartoon-sm bg-ink text-neon px-4 py-2 font-bold text-sm"></div>
+<div id="toast" role="status" aria-live="polite" class="toast-hide fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] cartoon-sm bg-ink text-neon px-4 py-2 font-bold text-sm"></div>
 
 <!-- ================= MODAL CONFIRMAÇÃO ================= -->
 <div id="confirmModal" class="hidden-i fixed inset-0 z-[55] bg-space/80 flex items-center justify-center p-4">
@@ -588,7 +605,18 @@ let unsub = null;           // unsubscribe do snapshot da ficha
 let unsubGm = null;         // unsubscribe do snapshot da coleção (GM)
 let gmSheets = {};          // cache do hub do narrador
 let saveTimer = null;
-let lastSavedJSON = '';
+let lastSaved = null;       // baseline confirmado (cloud) / salvo (local) p/ diff
+let lastSavedStamp = 0;     // updatedAt do último save próprio (anti-eco)
+
+/* chaves de localStorage centralizadas */
+const LS_SHEET = 'sinay-sheet-', LS_INDEX = 'sinay-index', LS_UID = 'sinay-local-uid';
+const sheetKey = (id) => LS_SHEET + id;
+
+/* limites de corrupção (sem números mágicos espalhados) */
+const SANITY_MIN = 0, INFECTION_MAX = 100;
+function meetsCorruption(s) {
+  return (s.sanity?.current ?? 1) <= SANITY_MIN || (s.infection ?? 0) >= INFECTION_MAX;
+}
 
 /* ---------- 4. UTILIDADES ---------- */
 const $ = (s) => document.querySelector(s);
@@ -605,29 +633,57 @@ function genShortId() {
 function toast(msg) {
   const el = $('#toast');
   el.textContent = msg;
-  el.classList.remove('hidden-i');
+  el.classList.remove('toast-hide');
   clearTimeout(el._t);
-  el._t = setTimeout(()=> el.classList.add('hidden-i'), 2200);
+  el._t = setTimeout(()=> el.classList.add('toast-hide'), 2200);
 }
 
 function confirmModal(title, text) {
   return new Promise((resolve)=>{
+    const modal = $('#confirmModal');
     $('#confirmTitle').textContent = title;
     $('#confirmText').textContent = text;
-    $('#confirmModal').classList.remove('hidden-i');
+    modal.classList.remove('hidden-i');
     const yes = $('#confirmYes'), no = $('#confirmNo');
-    const cleanup = (val) => { $('#confirmModal').classList.add('hidden-i'); yes.onclick=null; no.onclick=null; resolve(val); };
-    yes.onclick = ()=>cleanup(true);
-    no.onclick  = ()=>cleanup(false);
+    const onKey = (ev) => { if (ev.key === 'Escape') cleanup(false); else if (ev.key === 'Enter') cleanup(true); };
+    const onBackdrop = (ev) => { if (ev.target === modal) cleanup(false); };
+    const cleanup = (val) => {
+      modal.classList.add('hidden-i');
+      yes.onclick = null; no.onclick = null;
+      modal.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onKey);
+      resolve(val);
+    };
+    yes.onclick = () => cleanup(true);
+    no.onclick  = () => cleanup(false);
+    modal.addEventListener('click', onBackdrop);
+    document.addEventListener('keydown', onKey);
+    no.focus();
   });
 }
 
-function avatarMarkup(val) {
-  if (!val) return AVATAR_TPL.flor;
-  if (val.startsWith('tpl:')) return AVATAR_TPL[val.slice(4)] || AVATAR_TPL.flor;
-  // base64 / data URL
-  return `<img src="${val}" alt="avatar" class="w-full h-full object-cover" />`;
+/* Renderiza avatar com segurança: templates (SVG confiável) ou data-URL de imagem
+   validada e construída via DOM — imune a XSS. Cacheia o valor p/ evitar reflow. */
+const AVATAR_DATA_RE = /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=\s]+$/i;
+function renderAvatar(el, val) {
+  if (el._av === val) return;            // já renderizado: evita re-decode/flicker
+  el._av = val || '';
+  if (!val || val.startsWith('tpl:')) {
+    el.innerHTML = AVATAR_TPL[(val || 'tpl:flor').slice(4)] || AVATAR_TPL.flor;
+    return;
+  }
+  el.textContent = '';
+  if (AVATAR_DATA_RE.test(val)) {
+    const img = document.createElement('img');
+    img.src = val; img.alt = 'avatar';
+    img.className = 'w-full h-full object-cover';
+    el.appendChild(img);
+  } else {
+    el.innerHTML = AVATAR_TPL.flor;      // valor inesperado -> fallback seguro
+  }
 }
+
+function numOrNull(v) { const s = String(v).trim(); return (s === '' || isNaN(+s)) ? null : +s; }
 
 function infectColor(p) {
   // verde (140) -> vermelho (0)
@@ -658,8 +714,8 @@ function buildStatics() {
         <i data-lucide="${s.icon}" class="w-5 h-5 text-grape shrink-0"></i>
         <span class="text-sm font-bold text-ink leading-tight">${s.name}</span>
       </div>
-      <div class="flex items-center gap-1.5 shrink-0">
-        ${[1,2,3,4].map(l => `<button class="skill-dot w-6 h-6 rounded-full border-3 border-ink bg-paper" style="border:3px solid var(--ink)" data-skill="${s.key}" data-level="${l}"></button>`).join('')}
+      <div class="flex items-center gap-1.5 shrink-0" role="group" aria-label="${s.name}">
+        ${[1,2,3,4].map(l => `<button type="button" class="skill-dot w-6 h-6 rounded-full border-3 border-ink bg-paper" style="border:3px solid var(--ink)" data-skill="${s.key}" data-level="${l}" aria-label="${s.name} nível ${l}" aria-pressed="false"></button>`).join('')}
       </div>
     </div>`).join('');
 
@@ -670,7 +726,7 @@ function buildStatics() {
 function isFocused(el) { return document.activeElement === el; }
 
 function update() {
-  const t = TYPES[state.type];
+  const t = TYPES[state.type] || TYPES.blindado;  // fallback: nunca quebra a ficha
 
   // IDs
   $('#shortIdLabel').textContent = state.shortId;
@@ -690,9 +746,9 @@ function update() {
   if (!isFocused($('#abilityInput'))) $('#abilityInput').value = state.ability;
   $('#freeMode').checked = !!state.freeMode;
 
-  // Avatares
-  $('#avatarNormal').innerHTML = avatarMarkup(state.avatarNormal);
-  $('#avatarCorrupted').innerHTML = avatarMarkup(state.avatarCorrupted);
+  // Avatares (render seguro + cache anti-flicker)
+  renderAvatar($('#avatarNormal'), state.avatarNormal);
+  renderAvatar($('#avatarCorrupted'), state.avatarCorrupted);
 
   // Infecção
   const inf = clamp(state.infection, 0, 100);
@@ -714,7 +770,7 @@ function update() {
   const attrPool = t.attrPoints - sum(state.attributes);
   $('#attrPool').textContent = attrPool;
   $('#attrTotal').textContent = t.attrPoints;
-  $('#attrPoolPill').classList.toggle('bg-rose-500', attrPool < 0);
+  $('#attrPoolPill').classList.toggle('bg-rose-600', attrPool < 0);
   $('#attrPoolPill').classList.toggle('bg-grape', attrPool >= 0);
 
   // Skills + pool de treino
@@ -723,13 +779,14 @@ function update() {
     document.querySelectorAll(`[data-skill="${s.key}"]`).forEach(btn => {
       const filled = (+btn.dataset.level) <= lvl;
       btn.style.background = filled ? '#10b981' : '#fdfaf6';
+      btn.setAttribute('aria-pressed', String(filled));
     });
   });
   const trainPool = t.trainPoints - sum(state.skills);
   $('#trainPool').textContent = trainPool;
   $('#trainTotal').textContent = t.trainPoints;
-  $('#trainPoolPill').classList.toggle('bg-rose-500', trainPool < 0);
-  $('#trainPoolPill').classList.toggle('bg-emerald-500', trainPool >= 0);
+  $('#trainPoolPill').classList.toggle('bg-rose-600', trainPool < 0);
+  $('#trainPoolPill').classList.toggle('bg-emerald-700', trainPool >= 0);
 
   // Corrupção
   const overlay = $('#corruptOverlay');
@@ -742,8 +799,6 @@ function update() {
     $('#avatarNormal').classList.remove('monsterShake');
     $('#avatarCorrupted').classList.remove('monsterShake');
   }
-
-  lucide.createIcons();
 }
 
 function setRing(sel, cur, max) {
@@ -755,9 +810,7 @@ function setRing(sel, cur, max) {
 /* ---------- 7. MECÂNICAS ---------- */
 function checkTransformation() {
   // Corrupção é instantânea e permanece até a purificação.
-  if (state.sanity.current <= 0 || state.infection >= 100) {
-    state.corrupted = true;
-  }
+  if (meetsCorruption(state)) state.corrupted = true;
 }
 
 function commit() {
@@ -767,22 +820,38 @@ function commit() {
   persist();
 }
 
+/* Grava só os campos que mudaram (vs baseline confirmado), evitando o
+   "lost update" do GM e reuploads desnecessários do avatar. */
+function diffSheet(cur, prev) {
+  if (!prev) return { ...cur };
+  const patch = {};
+  for (const k of Object.keys(cur)) {
+    if (JSON.stringify(cur[k]) !== JSON.stringify(prev[k])) patch[k] = cur[k];
+  }
+  return patch;
+}
+
 function persist() {
   if (readOnly) return;
-  const clean = cleanSheet(state);
-  const json = JSON.stringify(clean);
-  if (json === lastSavedJSON) return;
-  lastSavedJSON = json;
 
   if (mode === 'cloud') {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(async () => {
-      try { await setDoc(sheetRef(activeDocId), clean, { merge: true }); }
-      catch (e) { console.error(e); toast('Erro ao salvar no Planeta.'); }
+      const cur = cleanSheet(state);                  // estado fresco no flush
+      const patch = diffSheet(cur, lastSaved);
+      if (!Object.keys(patch).length) return;
+      patch.updatedAt = cur.updatedAt;
+      try {
+        await setDoc(sheetRef(activeDocId), patch, { merge: true });
+        lastSaved = cur;                              // confirma só após sucesso
+        lastSavedStamp = cur.updatedAt;               // p/ ignorar o próprio eco
+      } catch (e) { console.error(e); toast('Erro ao salvar no Planeta.'); }
     }, 350);
   } else {
-    localStorage.setItem('sinay-sheet-' + activeDocId, json);
+    const cur = cleanSheet(state);
+    localStorage.setItem(sheetKey(activeDocId), JSON.stringify(cur));
     localIndexAdd(activeDocId);
+    lastSaved = cur;
   }
 }
 
@@ -799,22 +868,16 @@ function cleanSheet(s) {
   };
 }
 
-function applyType(key, { reset }) {
+function applyType(key) {
   const t = TYPES[key];
   state.type = key;
-  if (reset) {
-    state.life = { current: t.life, max: t.life };
-    state.sanity = { current: t.sanity, max: t.sanity };
-    state.attributes = { agilidade:0, blefe:0, poder:0, furtividade:0 };
-    state.skills = { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 };
-    state.ability = t.ability;
-    state.infection = 0;
-    state.corrupted = false;
-  } else {
-    // só atualiza os tetos
-    state.life.max = t.life;
-    state.sanity.max = t.sanity;
-  }
+  state.life = { current: t.life, max: t.life };
+  state.sanity = { current: t.sanity, max: t.sanity };
+  state.attributes = { agilidade:0, blefe:0, poder:0, furtividade:0 };
+  state.skills = { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 };
+  state.ability = t.ability;
+  state.infection = 0;
+  state.corrupted = false;
 }
 
 /* ---------- 8. FIREBASE ---------- */
@@ -841,8 +904,8 @@ async function initFirebase() {
 
 function startLocal() {
   mode = 'local';
-  myUserId = localStorage.getItem('sinay-local-uid');
-  if (!myUserId) { myUserId = 'local-' + genShortId(); localStorage.setItem('sinay-local-uid', myUserId); }
+  myUserId = localStorage.getItem(LS_UID);
+  if (!myUserId) { myUserId = 'local-' + genShortId(); localStorage.setItem(LS_UID, myUserId); }
   setConn('local', 'Modo Local');
 }
 
@@ -860,27 +923,30 @@ async function loadDoc(docId, { readOnlyFlag = false, gmFlag = false } = {}) {
   activeDocId = docId;
   readOnly = readOnlyFlag;
   gmEditing = gmFlag;
+  lastSaved = null; lastSavedStamp = 0;   // baseline novo para este doc
 
   if (mode === 'cloud') {
     unsub = onSnapshot(sheetRef(docId), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        if (JSON.stringify(data) === lastSavedJSON) return; // ignora eco do próprio save
+        if (data.updatedAt && data.updatedAt === lastSavedStamp) return; // ignora eco do próprio save
         mergeIntoState(data);
         checkTransformation();
         update();
+        lastSaved = cleanSheet(state);                 // sincroniza baseline com o servidor
+        lastSavedStamp = data.updatedAt || lastSavedStamp;
       } else if (docId === myUserId) {
         // primeira vez: cria minha ficha
         state = defaultSheet(myUserId);
-        lastSavedJSON = '';
+        lastSaved = null; lastSavedStamp = 0;
         commit();
       } else {
         toast('Ficha não encontrada.');
       }
     }, (err) => { console.error(err); setConn('err','Erro de conexão'); });
   } else {
-    const raw = localStorage.getItem('sinay-sheet-' + docId);
-    if (raw) { mergeIntoState(JSON.parse(raw)); checkTransformation(); update(); }
+    const raw = localStorage.getItem(sheetKey(docId));
+    if (raw) { mergeIntoState(JSON.parse(raw)); checkTransformation(); update(); lastSaved = cleanSheet(state); }
     else if (docId === myUserId) { state = defaultSheet(myUserId); commit(); }
     else { toast('Ficha local não encontrada.'); }
   }
@@ -895,12 +961,13 @@ function mergeIntoState(data) {
     attributes: { ...base.attributes, ...(data.attributes||{}) },
     skills: { ...base.skills, ...(data.skills||{}) },
   };
+  if (!TYPES[state.type]) state.type = 'blindado';   // tipo inválido -> padrão seguro
 }
 
 /* índice local de fichas (para o hub do narrador no modo local) */
 function localIndexAdd(id) {
-  const idx = JSON.parse(localStorage.getItem('sinay-index') || '[]');
-  if (!idx.includes(id)) { idx.push(id); localStorage.setItem('sinay-index', JSON.stringify(idx)); }
+  const idx = JSON.parse(localStorage.getItem(LS_INDEX) || '[]');
+  if (!idx.includes(id)) { idx.push(id); localStorage.setItem(LS_INDEX, JSON.stringify(idx)); }
 }
 
 /* ---------- 9. EVENTOS DE EDIÇÃO ---------- */
@@ -910,7 +977,7 @@ function bindEvents() {
     const key = e.target.value;
     const ok = await confirmModal('Trocar Tipo Psicológico?',
       `Isso redefine Vida, Sanidade, Atributos, Treinos e Habilidade para os valores base de ${TYPES[key].emoji} ${TYPES[key].name}.`);
-    if (ok) { applyType(key, { reset:true }); commit(); }
+    if (ok) { applyType(key); commit(); }
     else { update(); } // restaura o select
   });
 
@@ -925,15 +992,15 @@ function bindEvents() {
   // Infecção
   document.querySelectorAll('[data-infect]').forEach(b =>
     b.addEventListener('click', () => { if(guard())return; state.infection = clamp(state.infection + (+b.dataset.infect),0,100); commit(); }));
-  $('#infectInput').addEventListener('change', e => { if(guard())return; state.infection = clamp(+e.target.value||0,0,100); commit(); });
+  $('#infectInput').addEventListener('change', e => { if(guard())return; const v=numOrNull(e.target.value); if(v===null){update();return;} state.infection = clamp(v,0,100); commit(); });
 
   // Vida / Sanidade
   document.querySelectorAll('[data-life]').forEach(b =>
     b.addEventListener('click', () => { if(guard())return; state.life.current = clamp(state.life.current + (+b.dataset.life),0,state.life.max); commit(); }));
   document.querySelectorAll('[data-sanity]').forEach(b =>
     b.addEventListener('click', () => { if(guard())return; state.sanity.current = clamp(state.sanity.current + (+b.dataset.sanity),0,state.sanity.max); commit(); }));
-  $('#lifeInput').addEventListener('change', e => { if(guard())return; state.life.current = clamp(+e.target.value||0,0,state.life.max); commit(); });
-  $('#sanityInput').addEventListener('change', e => { if(guard())return; state.sanity.current = clamp(+e.target.value||0,0,state.sanity.max); commit(); });
+  $('#lifeInput').addEventListener('change', e => { if(guard())return; const v=numOrNull(e.target.value); if(v===null){update();return;} state.life.current = clamp(v,0,state.life.max); commit(); });
+  $('#sanityInput').addEventListener('change', e => { if(guard())return; const v=numOrNull(e.target.value); if(v===null){update();return;} state.sanity.current = clamp(v,0,state.sanity.max); commit(); });
 
   // Atributos +/- (delegação)
   document.addEventListener('click', (e) => {
@@ -981,12 +1048,16 @@ function bindEvents() {
   $('#copyLink').addEventListener('click', () => { copy($('#shareLink').value); toast('Link copiado!'); });
   $('#copyMsg').addEventListener('click', () => { copy($('#shareMsg').value); toast('Mensagem copiada!'); });
 
-  // Fechar modais
+  // Fechar modais (o confirmModal cuida do próprio backdrop, p/ resolver a Promise)
   document.querySelectorAll('[data-close]').forEach(b =>
-    b.addEventListener('click', () => $('#'+b.dataset.close).classList.add('hidden-i')));
+    b.addEventListener('click', () => { $('#'+b.dataset.close).classList.add('hidden-i'); if (b.dataset.close==='gmHub') stopGmHub(); }));
   document.querySelectorAll('.fixed.inset-0').forEach(m =>
-    m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden-i'); }));
+    m.addEventListener('click', e => {
+      if (e.target === m && m.id !== 'confirmModal') { m.classList.add('hidden-i'); if (m.id==='gmHub') stopGmHub(); }
+    }));
 }
+
+function stopGmHub() { if (unsubGm) { unsubGm(); unsubGm = null; } }
 
 let softTimer = null;
 function persistSoft() { clearTimeout(softTimer); softTimer = setTimeout(() => persist(), 400); }
@@ -1031,12 +1102,30 @@ function handleAvatar(btn) {
 function onAvatarFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-  if (file.size > 900*1024) { toast('Imagem muito grande (máx ~900KB).'); e.target.value=''; return; }
+  if (!/^image\//.test(file.type)) { toast('Selecione um arquivo de imagem.'); e.target.value=''; return; }
+  if (file.size > 8*1024*1024) { toast('Imagem muito grande (máx 8MB).'); e.target.value=''; return; }
+  const slot = pendingAvatarSlot;                 // captura local (sem corrida no global)
   const reader = new FileReader();
+  reader.onerror = () => toast('Não foi possível ler a imagem.');
   reader.onload = () => {
-    if (pendingAvatarSlot === 'normal') state.avatarNormal = reader.result;
-    else state.avatarCorrupted = reader.result;
-    commit();
+    const img = new Image();
+    img.onerror = () => toast('Imagem inválida.');
+    img.onload = () => {
+      // Reduz para uma miniatura: mantém o doc bem abaixo do limite de 1 MB do Firestore
+      const MAX = 256;
+      let w = img.width, h = img.height;
+      const scale = Math.min(1, MAX / Math.max(w, h));
+      w = Math.max(1, Math.round(w * scale));
+      h = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      if (slot === 'normal') state.avatarNormal = dataUrl;
+      else state.avatarCorrupted = dataUrl;
+      commit();
+    };
+    img.src = reader.result;
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -1081,17 +1170,20 @@ function openShare() {
 /* ---------- Clonar (espectador -> minha ficha) ---------- */
 async function cloneSheet() {
   if (mode !== 'cloud') { toast('Clonar exige conexão com o Planeta (Firebase).'); return; }
-  const ok = await confirmModal('Clonar esta ficha?', 'Uma cópia editável será salva sob o seu próprio ID.');
+  let aviso = 'Uma cópia editável será salva sob o seu próprio ID.';
+  try {
+    const mine = await getDoc(sheetRef(myUserId));
+    if (mine.exists()) aviso = '⚠️ Você já tem uma ficha! Clonar VAI SUBSTITUIR a sua ficha atual (sem desfazer). Gere um backup antes se quiser guardá-la.';
+  } catch (e) { /* sem leitura: segue com aviso padrão */ }
+  const ok = await confirmModal('Clonar esta ficha?', aviso);
   if (!ok) return;
   const copyState = cleanSheet(state);
   copyState.ownerId = myUserId;
   copyState.shortId = genShortId();
   try {
     await setDoc(sheetRef(myUserId), copyState, { merge: false });
-    // limpa o parâmetro de URL e recarrega a minha ficha
     history.replaceState(null, '', location.origin + location.pathname);
     readOnly = false; gmEditing = false;
-    lastSavedJSON = '';
     await loadDoc(myUserId);
     toast('Ficha clonada para o seu ID!');
   } catch (e) { console.error(e); toast('Erro ao clonar.'); }
@@ -1131,9 +1223,9 @@ function openGmHub() {
       renderGmList();
     }, (e)=>{ console.error(e); });
   } else {
-    const idx = JSON.parse(localStorage.getItem('sinay-index') || '[]');
+    const idx = JSON.parse(localStorage.getItem(LS_INDEX) || '[]');
     gmSheets = {};
-    idx.forEach(id => { const r = localStorage.getItem('sinay-sheet-'+id); if (r) gmSheets[id] = JSON.parse(r); });
+    idx.forEach(id => { const r = localStorage.getItem(sheetKey(id)); if (r) gmSheets[id] = JSON.parse(r); });
     renderGmList();
   }
 }
@@ -1145,7 +1237,7 @@ function renderGmList() {
   wrap.innerHTML = ids.map(id => {
     const s = gmSheets[id];
     const t = TYPES[s.type] || TYPES.blindado;
-    const corrupted = (s.sanity?.current <= 0) || (s.infection >= 100) || s.corrupted;
+    const corrupted = meetsCorruption(s) || s.corrupted;
     return `
     <div class="cartoon-sm ${corrupted?'bg-red-100':'bg-white'} p-3">
       <div class="flex items-center justify-between gap-2 flex-wrap">
@@ -1153,7 +1245,7 @@ function renderGmList() {
           <span class="text-2xl">${corrupted?'☣️':t.emoji}</span>
           <div class="min-w-0">
             <div class="font-bold text-ink truncate">${escapeHtml(s.name || 'Siny sem nome')} ${corrupted?'<span class="text-red-600">(Corrompido!)</span>':''}</div>
-            <div class="text-xs font-semibold text-ink/60">${s.shortId || id.slice(0,10)} · ${escapeHtml(s.work||'—')}</div>
+            <div class="text-xs font-semibold text-ink/60">${escapeHtml(s.shortId || id.slice(0,10))} · ${escapeHtml(s.work||'—')}</div>
           </div>
         </div>
         <div class="flex gap-2 text-xs font-bold">
@@ -1179,6 +1271,7 @@ async function gmAction(act, id) {
   const s = gmSheets[id];
   if (!s) return;
   if (act === 'abrir') {
+    stopGmHub();
     $('#gmHub').classList.add('hidden-i');
     await loadDoc(id, { gmFlag: id !== myUserId });
     return;
@@ -1186,9 +1279,15 @@ async function gmAction(act, id) {
   if (act === 'del') {
     const ok = await confirmModal('Deletar ficha?', `Remover ${s.name || s.shortId || id} permanentemente da mesa?`);
     if (!ok) return;
-    if (mode === 'cloud') { try { await deleteDoc(sheetRef(id)); } catch(e){ console.error(e);} }
-    else { localStorage.removeItem('sinay-sheet-'+id); const idx = JSON.parse(localStorage.getItem('sinay-index')||'[]').filter(x=>x!==id); localStorage.setItem('sinay-index', JSON.stringify(idx)); delete gmSheets[id]; renderGmList(); }
-    toast('Ficha deletada.');
+    if (mode === 'cloud') {
+      try { await deleteDoc(sheetRef(id)); toast('Ficha deletada.'); }
+      catch(e){ console.error(e); toast('Erro ao deletar.'); }
+    } else {
+      localStorage.removeItem(sheetKey(id));
+      const idx = JSON.parse(localStorage.getItem(LS_INDEX)||'[]').filter(x=>x!==id);
+      localStorage.setItem(LS_INDEX, JSON.stringify(idx));
+      delete gmSheets[id]; renderGmList(); toast('Ficha deletada.');
+    }
     return;
   }
   // efeitos
@@ -1199,14 +1298,18 @@ async function gmAction(act, id) {
   // recalcula corrupção
   const newSan = (upd.sanity ? upd.sanity.current : s.sanity?.current) ?? 100;
   const newInf = (upd.infection !== undefined ? upd.infection : s.infection) ?? 0;
-  if (newSan <= 0 || newInf >= 100) upd.corrupted = true;
+  if (newSan <= SANITY_MIN || newInf >= INFECTION_MAX) upd.corrupted = true;
   upd.updatedAt = Date.now();
 
   if (mode === 'cloud') {
-    try { await setDoc(sheetRef(id), upd, { merge:true }); } catch(e){ console.error(e); toast('Erro.'); }
+    try {
+      await setDoc(sheetRef(id), upd, { merge:true });
+      gmSheets[id] = { ...s, ...upd };   // atualização otimista: cliques rápidos não perdem
+      renderGmList();
+    } catch(e){ console.error(e); toast('Erro.'); }
   } else {
     const merged = { ...s, ...upd };
-    localStorage.setItem('sinay-sheet-'+id, JSON.stringify(merged));
+    localStorage.setItem(sheetKey(id), JSON.stringify(merged));
     gmSheets[id] = merged;
     if (id === activeDocId) { mergeIntoState(merged); checkTransformation(); update(); }
     renderGmList();

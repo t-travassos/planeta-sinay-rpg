@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// ============================================================
+// Planeta Sinay RPG — Regras do Firestore (modelo "mesa fechada")
+// ------------------------------------------------------------
+// As fichas ficam em: artifacts/{appId}/public/data/sheets/{sheetId}
+//
+// Modelo de confiança: mesa entre amigos. Qualquer pessoa LOGADA
+// (login anônimo serve) pode ler/escrever/deletar fichas — é o que
+// permite o controle remoto do Narrador e o modo espectador/clonagem
+// funcionarem sem servidor próprio.
+//
+// A senha do Narrador no app (inay1234) é apenas cosmética: ela NÃO
+// protege os dados (o código roda no navegador). Para uma mesa pública,
+// troque por autenticação real (custom claims/Admin) + regras por dono.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /artifacts/{appId}/public/data/sheets/{sheetId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Tudo o mais fica bloqueado por padrão.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
