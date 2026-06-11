@@ -927,23 +927,28 @@ async function loadDoc(docId, { readOnlyFlag = false, gmFlag = false } = {}) {
   lastSaved = null; lastSavedStamp = 0;   // baseline novo para este doc
 
   if (mode === 'cloud') {
+    let firstSnapshot = true;   // só cria a ficha na 1ª carga, nunca ao ser deletada
     unsub = onSnapshot(sheetRef(docId), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        if (data.updatedAt && data.updatedAt === lastSavedStamp) return; // ignora eco do próprio save
+        if (data.updatedAt && data.updatedAt === lastSavedStamp) { firstSnapshot = false; return; } // ignora eco do próprio save
         mergeIntoState(data);
         checkTransformation();
         update();
         lastSaved = cleanSheet(state);                 // sincroniza baseline com o servidor
         lastSavedStamp = data.updatedAt || lastSavedStamp;
-      } else if (docId === myUserId) {
-        // primeira vez: cria minha ficha
+      } else if (firstSnapshot && docId === myUserId) {
+        // primeiro acesso sem ficha: cria a minha
         state = defaultSheet(myUserId);
         lastSaved = null; lastSavedStamp = 0;
         commit();
+      } else if (!firstSnapshot) {
+        // a ficha foi deletada durante a sessão: NÃO recria sozinha
+        toast('Esta ficha foi removida da mesa.');
       } else {
         toast('Ficha não encontrada.');
       }
+      firstSnapshot = false;
     }, (err) => { console.error(err); setConn('err','Erro de conexão'); });
   } else {
     const raw = localStorage.getItem(sheetKey(docId));
