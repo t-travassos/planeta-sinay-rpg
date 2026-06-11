@@ -1,0 +1,11 @@
+# Ferramentas locais do Claude Code / preview
+.claude/
+
+# Dependências e logs
+node_modules/
+npm-debug.log*
+*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

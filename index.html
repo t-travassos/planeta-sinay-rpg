@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planeta Sinay RPG — Ficha do Siny</title>
+<meta name="description" content="Ficha interativa de Siny para o RPG Planeta Sinay, com sincronização em tempo real, painel do narrador e mecânica de corrupção por gosma." />
+
+<!-- Fonte rechonchuda e lúdica -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- Tailwind (modo CDN para SPA de arquivo único) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { fredoka: ['Fredoka', 'sans-serif'] },
+        colors: {
+          ink:    '#1e1b4b',  // contorno indigo profundo
+          space:  '#0d061f',  // fundo espacial
+          paper:  '#fdfaf6',  // painel claro
+          neon:   '#7CFF4F',  // gosma radioativa
+          goo:    '#39ff14',
+          life:   '#fb7185',  // rose
+          sanity: '#38bdf8',  // sky
+          infect: '#10b981',  // emerald
+          grape:  '#6d28d9',
+        },
+      },
+    },
+  };
+</script>
+
+<!-- Ícones táticos -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+  :root { --ink: #1e1b4b; }
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { font-family: 'Fredoka', sans-serif; }
+  body {
+    background:
+      radial-gradient(1100px 600px at 12% -8%, rgba(124,255,79,.10), transparent 60%),
+      radial-gradient(1000px 700px at 110% 10%, rgba(109,40,217,.35), transparent 55%),
+      radial-gradient(900px 700px at 50% 120%, rgba(56,189,248,.10), transparent 60%),
+      #0d061f;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ---- Estilo Cartoon / HQ ---- */
+  .cartoon {
+    background: #fdfaf6;
+    border: 4px solid var(--ink);
+    border-radius: 1.25rem;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .cartoon-sm { border: 3px solid var(--ink); border-radius: .9rem; box-shadow: 4px 4px 0 var(--ink); }
+  .cartoon-btn {
+    border: 3px solid var(--ink);
+    border-radius: .8rem;
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .07s ease, box-shadow .07s ease, filter .12s ease;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+  }
+  .cartoon-btn:hover { filter: brightness(1.04) saturate(1.05); }
+  .cartoon-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 var(--ink); }
+  .cartoon-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: 4px 4px 0 var(--ink); }
+  .cartoon-input {
+    border: 3px solid var(--ink);
+    border-radius: .7rem;
+    background: #fff;
+    font-weight: 600;
+    outline: none;
+  }
+  .cartoon-input:focus { box-shadow: 0 0 0 4px rgba(124,255,79,.45); }
+
+  .text-stroke { -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; }
+  .title-pop { text-shadow: 3px 3px 0 var(--ink); }
+
+  /* ---- Cabeçalho roxo com gosma escorrendo ---- */
+  .goo-header { position: relative; background: linear-gradient(180deg, #4c1d95 0%, #6d28d9 70%, #5b21b6 100%); }
+  .goo-drip { position: absolute; left: 0; right: 0; bottom: -1px; height: 46px; width: 100%; display: block; filter: drop-shadow(0 4px 6px rgba(57,255,20,.35)); }
+  .goo-drip path, .goo-drip rect, .goo-drip circle { fill: #7CFF4F; }
+  .goo-droplet {
+    position: absolute; width: 12px; height: 16px; background: #7CFF4F;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    box-shadow: 0 0 8px rgba(57,255,20,.7);
+    animation: drip 3.2s ease-in infinite;
+  }
+  @keyframes drip {
+    0% { transform: translateY(0) scaleY(.6); opacity: 0; }
+    18% { opacity: 1; }
+    70% { transform: translateY(34px) scaleY(1.1); opacity: 1; }
+    100% { transform: translateY(70px) scaleY(1.4); opacity: 0; }
+  }
+
+  /* ---- Pulso de conexão ---- */
+  .pulse-dot { position: relative; }
+  .pulse-dot::after {
+    content: ''; position: absolute; inset: -4px; border-radius: 9999px;
+    border: 2px solid currentColor; animation: ping 1.6s cubic-bezier(0,0,.2,1) infinite;
+  }
+  @keyframes ping { 0% { transform: scale(.8); opacity: .9; } 100% { transform: scale(2.1); opacity: 0; } }
+
+  /* ---- Mutação do monstro ---- */
+  @keyframes monsterShake {
+    0%,100% { transform: translate(0,0) rotate(0); }
+    15% { transform: translate(-3px,2px) rotate(-3deg); }
+    30% { transform: translate(3px,-2px) rotate(3deg); }
+    45% { transform: translate(-4px,-1px) rotate(-2deg); }
+    60% { transform: translate(4px,2px) rotate(2deg); }
+    75% { transform: translate(-2px,3px) rotate(-1deg); }
+  }
+  .monsterShake { animation: monsterShake .35s infinite; filter: hue-rotate(110deg) contrast(1.5) saturate(1.6) brightness(.95); }
+
+  @keyframes slimePulse { 0%,100% { opacity: .82; } 50% { opacity: .5; } }
+  .slime-overlay { animation: slimePulse 1.1s ease-in-out infinite; }
+
+  /* Esfera de status (anel) */
+  .ring-fill { transition: stroke-dashoffset .35s ease; }
+
+  /* faixa de scroll suave */
+  ::-webkit-scrollbar { height: 10px; width: 10px; }
+  ::-webkit-scrollbar-thumb { background: #6d28d9; border-radius: 9999px; border: 2px solid #2e1065; }
+
+  .read-only [data-editable] { pointer-events: none; opacity: .92; }
+  .read-only [data-editable] input,
+  .read-only [data-editable] textarea,
+  .read-only [data-editable] select { background: #f1eee9; }
+
+  .hidden-i { display: none !important; }
+</style>
+</head>
+
+<body class="font-fredoka pb-24">
+
+<!-- ================= BANNER ESPECTADOR ================= -->
+<div id="spectatorBanner" class="hidden-i sticky top-0 z-40 bg-yellow-300 border-b-4 border-ink text-ink font-bold text-center py-2 px-4">
+  <span class="inline-flex items-center gap-2 flex-wrap justify-center">
+    <i data-lucide="eye" class="w-5 h-5"></i>
+    <span id="spectatorText">Modo Espectador — visualizando ficha de outro Siny (somente leitura).</span>
+    <button id="cloneBtn" class="cartoon-btn bg-neon px-3 py-1 text-sm ml-2">Clonar Ficha</button>
+  </span>
+</div>
+
+<!-- ================= BANNER GM EDITANDO ================= -->
+<div id="gmEditBanner" class="hidden-i sticky top-0 z-40 bg-grape text-white border-b-4 border-ink font-bold text-center py-2 px-4">
+  <span class="inline-flex items-center gap-2 flex-wrap justify-center">
+    <i data-lucide="shield-alert" class="w-5 h-5"></i>
+    <span id="gmEditText">Mesa do Narrador — editando ficha alheia.</span>
+    <button id="gmReturnBtn" class="cartoon-btn bg-paper text-ink px-3 py-1 text-sm ml-2">Voltar pra minha ficha</button>
+  </span>
+</div>
+
+<!-- ================= A. BARRA SUPERIOR GLOBAL DE REDE ================= -->
+<header class="goo-header text-white">
+  <div class="max-w-5xl mx-auto px-4 pt-4 pb-10">
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-3">
+        <div class="text-3xl sm:text-4xl">🪐</div>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold title-pop leading-none">Planeta Sinay</h1>
+          <p class="text-xs sm:text-sm text-neon font-semibold -mt-0.5">Ficha de Sobrevivência do Siny</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Status de conexão pulsante -->
+        <div id="connPill" class="cartoon-sm bg-paper text-ink px-3 py-1.5 flex items-center gap-2 text-sm font-bold">
+          <span id="connDot" class="pulse-dot inline-block w-3 h-3 rounded-full bg-gray-400 text-gray-400"></span>
+          <span id="connText">Conectando…</span>
+        </div>
+        <!-- ID curto de sobrevivência -->
+        <div class="cartoon-sm bg-ink text-neon px-3 py-1.5 text-sm font-bold tracking-wide">
+          <span id="shortIdLabel">SINY-______</span>
+        </div>
+        <button id="shareBtn" class="cartoon-btn bg-neon text-ink px-3 py-1.5 text-sm flex items-center gap-1.5">
+          <i data-lucide="share-2" class="w-4 h-4"></i> Compartilhar Siny
+        </button>
+        <button id="gmBtn" class="cartoon-btn bg-rose-400 text-ink px-3 py-1.5 text-sm flex items-center gap-1.5">
+          <i data-lucide="shield" class="w-4 h-4"></i> Mesa do Narrador
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- gosma escorrendo -->
+  <svg class="goo-drip" viewBox="0 0 1200 46" preserveAspectRatio="none" aria-hidden="true">
+    <rect x="0" y="0" width="1200" height="14"></rect>
+    <g>
+      <path d="M70 10 C58 24 58 34 70 38 C82 34 82 24 70 10 Z"></path>
+      <path d="M210 10 C200 30 200 44 210 50 C220 44 220 30 210 10 Z"></path>
+      <path d="M360 10 C350 22 350 30 360 33 C370 30 370 22 360 10 Z"></path>
+      <path d="M520 10 C508 28 508 40 520 45 C532 40 532 28 520 10 Z"></path>
+      <path d="M680 10 C672 20 672 27 680 30 C688 27 688 20 680 10 Z"></path>
+      <path d="M840 10 C828 30 828 44 840 50 C852 44 852 30 840 10 Z"></path>
+      <path d="M1000 10 C990 24 990 33 1000 37 C1010 33 1010 24 1000 10 Z"></path>
+      <path d="M1130 10 C1120 28 1120 39 1130 44 C1140 39 1140 28 1130 10 Z"></path>
+    </g>
+  </svg>
+  <span class="goo-droplet" style="left:14%; animation-delay:.2s"></span>
+  <span class="goo-droplet" style="left:43%; animation-delay:1.4s"></span>
+  <span class="goo-droplet" style="left:70%; animation-delay:.8s"></span>
+  <span class="goo-droplet" style="left:88%; animation-delay:2.1s"></span>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
+
+  <!-- ================= B. CARREGAMENTO RÁPIDO POR ID ================= -->
+  <section class="cartoon p-4 flex flex-col sm:flex-row items-center gap-3 justify-between">
+    <div class="flex items-center gap-2 text-ink font-bold">
+      <i data-lucide="fingerprint" class="w-5 h-5"></i>
+      <span>Seu ID:</span>
+      <span id="myShortId" class="bg-ink text-neon rounded-lg px-2 py-0.5">SINY-______</span>
+    </div>
+    <div class="flex items-center gap-2 w-full sm:w-auto">
+      <input id="loadIdInput" class="cartoon-input px-3 py-2 w-full sm:w-56" placeholder="Carregar outro Siny (SINY-XXXXXX)" />
+      <button id="loadIdBtn" class="cartoon-btn bg-sanity text-ink px-3 py-2 flex items-center gap-1.5 whitespace-nowrap">
+        <i data-lucide="search" class="w-4 h-4"></i> Buscar
+      </button>
+    </div>
+  </section>
+
+  <!-- ================= C. IDENTIDADE & INFECÇÃO ================= -->
+  <section class="cartoon p-5 relative overflow-hidden">
+    <!-- overlay de corrupção -->
+    <div id="corruptOverlay" class="hidden-i absolute inset-0 z-20 bg-red-600/80 slime-overlay flex flex-col items-center justify-center text-white text-center p-4">
+      <div class="text-5xl mb-2">☣️</div>
+      <h2 class="text-3xl sm:text-4xl font-bold title-pop">Siny Corrompido!</h2>
+      <p class="font-semibold mt-1 max-w-md">A gosma venceu. Este Siny virou um monstro do Planeta Sinay.</p>
+      <button id="purifyBtn" class="cartoon-btn bg-neon text-ink px-5 py-2 mt-4 text-lg flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-5 h-5"></i> Purificar Siny
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="id-card" class="w-6 h-6 text-grape"></i>
+      <h2 class="text-xl font-bold text-ink">Identidade &amp; Infecção por Gosma</h2>
+    </div>
+
+    <div class="grid md:grid-cols-[auto_1fr] gap-6">
+      <!-- Duplo sistema de fotos -->
+      <div class="flex gap-4 justify-center" data-editable>
+        <!-- Foto normal -->
+        <div class="text-center">
+          <div id="avatarNormal" class="w-28 h-28 sm:w-32 sm:h-32 bg-white border-4 border-ink rounded-2xl overflow-hidden flex items-center justify-center"></div>
+          <p class="text-xs font-bold mt-1 text-ink">Saudável</p>
+          <div class="flex justify-center gap-1 mt-1">
+            <button class="cartoon-btn bg-paper px-1.5 py-1 text-xs" data-avatar="normal" data-act="upload" title="Enviar foto"><i data-lucide="upload" class="w-3.5 h-3.5"></i></button>
+            <button class="cartoon-btn bg-rose-200 px-1.5 py-1 text-xs" data-avatar="normal" data-tpl="flor" title="Flor">🌸</button>
+            <button class="cartoon-btn bg-sky-200 px-1.5 py-1 text-xs" data-avatar="normal" data-tpl="nuvem" title="Nuvem">☁️</button>
+            <button class="cartoon-btn bg-green-200 px-1.5 py-1 text-xs" data-avatar="normal" data-tpl="monstro" title="Gosma">🟢</button>
+          </div>
+        </div>
+        <!-- Foto corrompida -->
+        <div class="text-center">
+          <div id="avatarCorrupted" class="w-28 h-28 sm:w-32 sm:h-32 bg-white border-4 border-ink rounded-2xl overflow-hidden flex items-center justify-center"></div>
+          <p class="text-xs font-bold mt-1 text-ink">Corrompido</p>
+          <div class="flex justify-center gap-1 mt-1">
+            <button class="cartoon-btn bg-paper px-1.5 py-1 text-xs" data-avatar="corrupted" data-act="upload" title="Enviar foto"><i data-lucide="upload" class="w-3.5 h-3.5"></i></button>
+            <button class="cartoon-btn bg-rose-200 px-1.5 py-1 text-xs" data-avatar="corrupted" data-tpl="flor" title="Flor">🌸</button>
+            <button class="cartoon-btn bg-sky-200 px-1.5 py-1 text-xs" data-avatar="corrupted" data-tpl="nuvem" title="Nuvem">☁️</button>
+            <button class="cartoon-btn bg-green-200 px-1.5 py-1 text-xs" data-avatar="corrupted" data-tpl="monstro" title="Gosma">🟢</button>
+          </div>
+        </div>
+        <input type="file" id="avatarFile" accept="image/*" class="hidden" />
+      </div>
+
+      <!-- Dados pessoais + tipo -->
+      <div class="space-y-3" data-editable>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-xs font-bold text-ink uppercase tracking-wide">Nome do Siny</span>
+            <input id="nameInput" class="cartoon-input px-3 py-2 w-full mt-1" placeholder="Ex.: Tico Florzinha" />
+          </label>
+          <label class="block">
+            <span class="text-xs font-bold text-ink uppercase tracking-wide">Trabalho (Motivação)</span>
+            <input id="workInput" class="cartoon-input px-3 py-2 w-full mt-1" placeholder="Ex.: Educador de creche" />
+          </label>
+        </div>
+        <label class="block">
+          <span class="text-xs font-bold text-ink uppercase tracking-wide">Tipo Psicológico</span>
+          <select id="typeSelect" class="cartoon-input px-3 py-2 w-full mt-1 bg-white">
+            <option value="blindado">🛡️ Blindado</option>
+            <option value="obcecado">🎯 Obcecado</option>
+            <option value="desgastado">💤 Desgastado</option>
+            <option value="explosivo">💥 Explosivo</option>
+            <option value="sonhador">💭 Sonhador</option>
+          </select>
+        </label>
+
+        <!-- Medidor de Infecção -->
+        <div class="cartoon-sm bg-white p-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-ink uppercase tracking-wide flex items-center gap-1"><i data-lucide="biohazard" class="w-4 h-4 text-infect"></i> Infecção por Gosma</span>
+            <span id="infectPct" class="font-bold text-ink">0%</span>
+          </div>
+          <div class="h-5 w-full rounded-full border-3 border-ink overflow-hidden bg-paper" style="border:3px solid var(--ink)">
+            <div id="infectBar" class="h-full rounded-full transition-all duration-300" style="width:0%; background:#10b981"></div>
+          </div>
+          <div class="flex items-center gap-2 mt-2 flex-wrap">
+            <button class="cartoon-btn bg-emerald-200 px-2.5 py-1 text-sm" data-infect="-10">-10%</button>
+            <button class="cartoon-btn bg-emerald-100 px-2.5 py-1 text-sm" data-infect="-1">-1%</button>
+            <input id="infectInput" type="number" min="0" max="100" class="cartoon-input px-2 py-1 w-16 text-center" value="0" />
+            <button class="cartoon-btn bg-rose-100 px-2.5 py-1 text-sm" data-infect="1">+1%</button>
+            <button class="cartoon-btn bg-rose-200 px-2.5 py-1 text-sm" data-infect="10">+10%</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= D. HABILIDADE ESPECIAL ================= -->
+  <section class="cartoon p-5" data-editable>
+    <div class="flex items-center gap-2 mb-3">
+      <i data-lucide="wand-sparkles" class="w-6 h-6 text-grape"></i>
+      <h2 class="text-xl font-bold text-ink">Habilidade Especial</h2>
+    </div>
+    <textarea id="abilityInput" rows="3" class="cartoon-input px-3 py-2 w-full resize-y" placeholder="Efeitos especiais da mente ou profissão do Siny…"></textarea>
+  </section>
+
+  <!-- ================= E. ATRIBUTOS VITAIS ================= -->
+  <section class="cartoon p-5" data-editable>
+    <div class="flex items-center justify-between gap-2 mb-4 flex-wrap">
+      <div class="flex items-center gap-2">
+        <i data-lucide="heart-pulse" class="w-6 h-6 text-life"></i>
+        <h2 class="text-xl font-bold text-ink">Atributos Vitais</h2>
+      </div>
+      <label class="cartoon-sm bg-amber-100 px-3 py-1.5 flex items-center gap-2 text-sm font-bold cursor-pointer">
+        <input id="freeMode" type="checkbox" class="w-4 h-4 accent-grape" />
+        <i data-lucide="unlock" class="w-4 h-4"></i> Modo Livre / Mestre
+      </label>
+    </div>
+
+    <!-- Primordiais -->
+    <div class="grid sm:grid-cols-2 gap-5">
+      <!-- VIDA -->
+      <div class="cartoon-sm bg-rose-50 p-4 flex flex-col items-center">
+        <div class="flex items-center gap-2 text-life font-bold text-lg"><i data-lucide="heart" class="w-6 h-6 fill-life"></i> Vida</div>
+        <div class="relative my-2">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="62" fill="#fff" stroke="#1e1b4b" stroke-width="6"></circle>
+            <circle id="lifeRing" cx="75" cy="75" r="62" fill="none" stroke="#fb7185" stroke-width="10"
+                    stroke-linecap="round" transform="rotate(-90 75 75)" class="ring-fill"
+                    stroke-dasharray="389.5" stroke-dashoffset="0"></circle>
+          </svg>
+          <input id="lifeInput" type="number" class="absolute inset-0 m-auto w-20 h-12 text-center text-3xl font-bold text-life bg-transparent border-none focus:outline-none" value="120" style="top:8px" />
+          <span id="lifeMax" class="absolute left-0 right-0 text-center text-xs font-bold text-ink/60" style="bottom:42px">/ 120</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="cartoon-btn bg-rose-200 px-3 py-1.5 text-lg font-bold" data-life="-10">−10</button>
+          <button class="cartoon-btn bg-rose-300 px-3 py-1.5 text-lg font-bold" data-life="10">+10</button>
+        </div>
+      </div>
+
+      <!-- SANIDADE -->
+      <div class="cartoon-sm bg-sky-50 p-4 flex flex-col items-center">
+        <div class="flex items-center gap-2 text-sanity font-bold text-lg"><i data-lucide="brain" class="w-6 h-6"></i> Sanidade</div>
+        <div class="relative my-2">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="62" fill="#fff" stroke="#1e1b4b" stroke-width="6"></circle>
+            <circle id="sanityRing" cx="75" cy="75" r="62" fill="none" stroke="#38bdf8" stroke-width="10"
+                    stroke-linecap="round" transform="rotate(-90 75 75)" class="ring-fill"
+                    stroke-dasharray="389.5" stroke-dashoffset="0"></circle>
+          </svg>
+          <input id="sanityInput" type="number" class="absolute inset-0 m-auto w-20 h-12 text-center text-3xl font-bold text-sanity bg-transparent border-none focus:outline-none" value="70" style="top:8px" />
+          <span id="sanityMax" class="absolute left-0 right-0 text-center text-xs font-bold text-ink/60" style="bottom:42px">/ 70</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="cartoon-btn bg-sky-200 px-3 py-1.5 text-lg font-bold" data-sanity="-10">−10</button>
+          <button class="cartoon-btn bg-sky-300 px-3 py-1.5 text-lg font-bold" data-sanity="10">+10</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Adicionais + Pool -->
+    <div class="mt-5">
+      <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <h3 class="font-bold text-ink flex items-center gap-2"><i data-lucide="sparkle" class="w-5 h-5 text-grape"></i> Atributos Adicionais</h3>
+        <div id="attrPoolPill" class="cartoon-sm bg-grape text-white px-3 py-1.5 text-sm font-bold">
+          Pontos: <span id="attrPool">7</span> / <span id="attrTotal">7</span>
+        </div>
+      </div>
+      <div id="attrGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    </div>
+  </section>
+
+  <!-- ================= F. TREINAMENTOS E COMPETÊNCIAS ================= -->
+  <section class="cartoon p-5" data-editable>
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <div class="flex items-center gap-2">
+        <i data-lucide="graduation-cap" class="w-6 h-6 text-grape"></i>
+        <h2 class="text-xl font-bold text-ink">Treinamentos &amp; Competências</h2>
+      </div>
+      <div id="trainPoolPill" class="cartoon-sm bg-emerald-500 text-white px-3 py-1.5 text-sm font-bold">
+        Treino: <span id="trainPool">10</span> / <span id="trainTotal">10</span>
+      </div>
+    </div>
+    <div id="skillGrid" class="grid sm:grid-cols-2 gap-3"></div>
+  </section>
+
+  <!-- ================= G. BANCO DE DADOS DE BACKUP ================= -->
+  <section class="cartoon p-5" data-editable>
+    <div class="flex items-center gap-2 mb-3">
+      <i data-lucide="database" class="w-6 h-6 text-grape"></i>
+      <h2 class="text-xl font-bold text-ink">Banco de Dados de Backup</h2>
+    </div>
+    <p class="text-sm text-ink/70 font-semibold mb-2">Código serializado (Base64). Copie e guarde em arquivo de texto, ou cole um código e clique em <b>Carregar</b>.</p>
+    <textarea id="backupBox" rows="3" class="cartoon-input px-3 py-2 w-full font-mono text-xs resize-y" spellcheck="false"></textarea>
+    <div class="flex gap-2 mt-2 flex-wrap">
+      <button id="backupRefresh" class="cartoon-btn bg-paper px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Gerar código</button>
+      <button id="backupCopy" class="cartoon-btn bg-neon px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="copy" class="w-4 h-4"></i> Copiar</button>
+      <button id="backupLoad" class="cartoon-btn bg-sanity px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Carregar</button>
+    </div>
+  </section>
+
+  <footer class="text-center text-white/40 text-xs pt-4 pb-2">
+    Planeta Sinay RPG · Ficha do Siny · feito para a mesa virtual
+  </footer>
+</main>
+
+<!-- ================= POPUP COMPARTILHAR ================= -->
+<div id="shareModal" class="hidden-i fixed inset-0 z-50 bg-space/80 flex items-center justify-center p-4">
+  <div class="cartoon bg-paper p-5 max-w-md w-full">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-xl font-bold text-ink flex items-center gap-2"><i data-lucide="share-2" class="w-5 h-5"></i> Compartilhar Siny</h3>
+      <button data-close="shareModal" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <p class="text-sm text-ink/70 font-semibold mb-2">Link de visualização (modo espectador):</p>
+    <input id="shareLink" class="cartoon-input px-3 py-2 w-full text-sm mb-3" readonly />
+    <p class="text-sm text-ink/70 font-semibold mb-2">Mensagem pronta pro WhatsApp:</p>
+    <textarea id="shareMsg" rows="4" class="cartoon-input px-3 py-2 w-full text-sm mb-3" readonly></textarea>
+    <div class="flex gap-2 flex-wrap">
+      <button id="copyLink" class="cartoon-btn bg-sanity px-3 py-2 text-sm flex items-center gap-1.5"><i data-lucide="link" class="w-4 h-4"></i> Copiar link</button>
+      <button id="copyMsg" class="cartoon-btn bg-neon px-3 py-2 text-sm flex items-center gap-1.5"><i data-lucide="message-circle" class="w-4 h-4"></i> Copiar mensagem</button>
+      <a id="waLink" target="_blank" rel="noopener" class="cartoon-btn bg-green-400 px-3 py-2 text-sm flex items-center gap-1.5"><i data-lucide="send" class="w-4 h-4"></i> Abrir WhatsApp</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL SENHA GM ================= -->
+<div id="gmGate" class="hidden-i fixed inset-0 z-50 bg-space/80 flex items-center justify-center p-4">
+  <div class="cartoon bg-paper p-5 max-w-sm w-full">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-xl font-bold text-ink flex items-center gap-2"><i data-lucide="lock" class="w-5 h-5"></i> Mesa do Narrador</h3>
+      <button data-close="gmGate" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <p class="text-sm text-ink/70 font-semibold mb-2">Senha de segurança do Narrador:</p>
+    <input id="gmPass" type="password" class="cartoon-input px-3 py-2 w-full mb-2" placeholder="••••••••" />
+    <p id="gmPassErr" class="text-rose-600 text-sm font-bold mb-2 hidden-i">Senha incorreta!</p>
+    <button id="gmEnter" class="cartoon-btn bg-neon px-4 py-2 w-full">Entrar na Mesa</button>
+  </div>
+</div>
+
+<!-- ================= MODAL HUB GM ================= -->
+<div id="gmHub" class="hidden-i fixed inset-0 z-50 bg-space/85 flex items-start sm:items-center justify-center p-3 overflow-auto">
+  <div class="cartoon bg-paper p-5 max-w-3xl w-full my-4">
+    <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+      <h3 class="text-xl font-bold text-ink flex items-center gap-2"><i data-lucide="users" class="w-6 h-6 text-grape"></i> Sinies Ativos na Mesa</h3>
+      <button data-close="gmHub" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+    <p class="text-sm text-ink/70 font-semibold mb-3">Controle remoto em tempo real. Aplique efeitos ou abra a ficha pra edição direta.</p>
+    <div id="gmList" class="space-y-3 max-h-[65vh] overflow-auto pr-1"></div>
+  </div>
+</div>
+
+<!-- ================= TOAST ================= -->
+<div id="toast" class="hidden-i fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] cartoon-sm bg-ink text-neon px-4 py-2 font-bold text-sm"></div>
+
+<!-- ================= MODAL CONFIRMAÇÃO ================= -->
+<div id="confirmModal" class="hidden-i fixed inset-0 z-[55] bg-space/80 flex items-center justify-center p-4">
+  <div class="cartoon bg-paper p-5 max-w-sm w-full">
+    <h3 id="confirmTitle" class="text-lg font-bold text-ink mb-2">Confirmar?</h3>
+    <p id="confirmText" class="text-sm text-ink/80 font-semibold mb-4"></p>
+    <div class="flex gap-2 justify-end">
+      <button id="confirmNo" class="cartoon-btn bg-paper px-4 py-2">Cancelar</button>
+      <button id="confirmYes" class="cartoon-btn bg-rose-400 px-4 py-2">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* ============================================================
+   PLANETA SINAY RPG — Ficha do Siny
+   SPA de arquivo único · Firebase (Auth anônimo + Firestore)
+   Fallback automático em modo LOCAL (localStorage) sem config.
+   ============================================================ */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, deleteDoc, onSnapshot, collection,
+         query, where, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* ---------- 1. CONFIG FIREBASE (preencha para sincronizar) ---------- */
+// Cole aqui a config do seu projeto Firebase. Enquanto tiver "YOUR_API_KEY",
+// o app roda em MODO LOCAL (somente neste navegador, via localStorage).
+const USER_FIREBASE_CONFIG = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+
+// Suporte ao ambiente de artifacts (globais injetadas), com fallback.
+const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config)
+  ? JSON.parse(__firebase_config) : USER_FIREBASE_CONFIG;
+const appId = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'planeta-sinay-rpg';
+const initialAuthToken = (typeof __initial_auth_token !== 'undefined') ? __initial_auth_token : null;
+
+const GM_PASSWORD = 'inay1234';
+const CONFIGURED = !String(firebaseConfig.apiKey || '').includes('YOUR_');
+
+/* ---------- 2. DADOS DO SISTEMA ---------- */
+const TYPES = {
+  blindado:   { name:'Blindado',  emoji:'🛡️', life:120, sanity:70,  attrPoints:7,  trainPoints:10, ability:'Casca grossa. Elevada resistência a infecção por gosma e devolve parte do dano físico como espinhos.' },
+  obcecado:   { name:'Obcecado',  emoji:'🎯', life:85,  sanity:75,  attrPoints:9,  trainPoints:11, ability:'Foco extremo. Reduz o tempo de tarefas mecânicas ou de investigação para a metade.' },
+  desgastado: { name:'Desgastado',emoji:'💤', life:105, sanity:105, attrPoints:5,  trainPoints:7,  ability:'Aura apática. Diminui a velocidade de monstros de gosma próximos e resiste a ser empurrado. Tem sanidade reforçada para aguentar o estresse físico.' },
+  explosivo:  { name:'Explosivo', emoji:'💥', life:95,  sanity:65,  attrPoints:11, trainPoints:8,  ability:'Pavio curto. Ganha velocidade e força absurdas quando é ferido por monstros.' },
+  sonhador:   { name:'Sonhador',  emoji:'💭', life:70,  sanity:110, attrPoints:8,  trainPoints:9,  ability:'Mundo de bolha. Cria bolhas de proteção para flutuar por cima de áreas alagadas de gosma.' },
+};
+
+const ATTRS = [
+  { key:'agilidade',   name:'Agilidade',   icon:'rabbit' },
+  { key:'blefe',       name:'Blefe',       icon:'drama' },
+  { key:'poder',       name:'Poder',       icon:'flame' },
+  { key:'furtividade', name:'Furtividade', icon:'footprints' },
+];
+
+const SKILLS = [
+  { key:'adestramento', name:'Adestramento de Criaturas', icon:'paw-print' },
+  { key:'investigacao', name:'Investigação de Goma',      icon:'search' },
+  { key:'medico',       name:'Suporte Médico',            icon:'heart-pulse' },
+  { key:'percepcao',    name:'Percepção Espacial',        icon:'scan-eye' },
+  { key:'fisico',       name:'Preparação Física',         icon:'dumbbell' },
+  { key:'combate',      name:'Combate de Rua',            icon:'swords' },
+  { key:'reflexos',     name:'Reflexos Rápidos',          icon:'zap' },
+  { key:'mecanica',     name:'Mecânica de Sobrevivência', icon:'wrench' },
+];
+
+/* ---------- Templates de avatar (SVG inline) ---------- */
+const AVATAR_TPL = {
+  flor: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#fff5fa"/><g stroke="#1e1b4b" stroke-width="3"><circle cx="50" cy="28" r="14" fill="#FF8AC2"/><circle cx="72" cy="50" r="14" fill="#FF8AC2"/><circle cx="50" cy="72" r="14" fill="#FF8AC2"/><circle cx="28" cy="50" r="14" fill="#FF8AC2"/><circle cx="50" cy="50" r="15" fill="#FFD166"/></g><path d="M50 65 Q47 50 50 50" stroke="#1e1b4b" stroke-width="2" fill="none"/></svg>`,
+  nuvem: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#eef7ff"/><g fill="#BFE3FF" stroke="#1e1b4b" stroke-width="3"><circle cx="36" cy="56" r="17"/><circle cx="56" cy="48" r="21"/><circle cx="72" cy="58" r="14"/></g><circle cx="46" cy="52" r="3.5" fill="#1e1b4b"/><circle cx="62" cy="50" r="3.5" fill="#1e1b4b"/><path d="M48 62 Q55 68 62 60" stroke="#1e1b4b" stroke-width="3" fill="none"/></svg>`,
+  monstro: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0d2417"/><path d="M20 60 Q15 30 35 28 Q40 10 55 22 Q75 12 80 38 Q93 46 82 62 L82 82 Q72 73 64 83 Q54 73 46 83 Q38 73 30 83 L28 64 Z" fill="#7CFF4F" stroke="#1e1b4b" stroke-width="3"/><circle cx="42" cy="48" r="8" fill="#fff" stroke="#1e1b4b" stroke-width="2"/><circle cx="42" cy="49" r="4" fill="#1e1b4b"/><circle cx="64" cy="46" r="7" fill="#fff" stroke="#1e1b4b" stroke-width="2"/><circle cx="64" cy="47" r="3.5" fill="#1e1b4b"/><path d="M44 66 Q54 74 64 62" stroke="#1e1b4b" stroke-width="3" fill="none"/></svg>`,
+};
+
+/* ---------- 3. ESTADO ---------- */
+const C = 2 * Math.PI * 62; // circunferência dos anéis
+
+function defaultSheet(ownerId) {
+  const t = TYPES.blindado;
+  return {
+    shortId: genShortId(),
+    ownerId: ownerId || null,
+    type: 'blindado',
+    name: '', work: '',
+    ability: t.ability,
+    avatarNormal: 'tpl:flor',
+    avatarCorrupted: 'tpl:monstro',
+    infection: 0,
+    life:   { current: t.life,   max: t.life },
+    sanity: { current: t.sanity, max: t.sanity },
+    attributes: { agilidade:0, blefe:0, poder:0, furtividade:0 },
+    skills: { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 },
+    freeMode: false,
+    corrupted: false,
+    updatedAt: Date.now(),
+  };
+}
+
+let state = defaultSheet();
+let myUserId = null;        // uid do Firebase (ou id local)
+let activeDocId = null;     // doc atualmente carregado
+let readOnly = false;       // espectador
+let gmEditing = false;      // narrador editando ficha alheia
+let mode = 'local';         // 'cloud' | 'local'
+let db = null, auth = null;
+let unsub = null;           // unsubscribe do snapshot da ficha
+let unsubGm = null;         // unsubscribe do snapshot da coleção (GM)
+let gmSheets = {};          // cache do hub do narrador
+let saveTimer = null;
+let lastSavedJSON = '';
+
+/* ---------- 4. UTILIDADES ---------- */
+const $ = (s) => document.querySelector(s);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const sum = (o) => Object.values(o).reduce((a,b)=>a+(+b||0), 0);
+
+function genShortId() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i=0;i<6;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return 'SINY-' + s;
+}
+
+function toast(msg) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.remove('hidden-i');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=> el.classList.add('hidden-i'), 2200);
+}
+
+function confirmModal(title, text) {
+  return new Promise((resolve)=>{
+    $('#confirmTitle').textContent = title;
+    $('#confirmText').textContent = text;
+    $('#confirmModal').classList.remove('hidden-i');
+    const yes = $('#confirmYes'), no = $('#confirmNo');
+    const cleanup = (val) => { $('#confirmModal').classList.add('hidden-i'); yes.onclick=null; no.onclick=null; resolve(val); };
+    yes.onclick = ()=>cleanup(true);
+    no.onclick  = ()=>cleanup(false);
+  });
+}
+
+function avatarMarkup(val) {
+  if (!val) return AVATAR_TPL.flor;
+  if (val.startsWith('tpl:')) return AVATAR_TPL[val.slice(4)] || AVATAR_TPL.flor;
+  // base64 / data URL
+  return `<img src="${val}" alt="avatar" class="w-full h-full object-cover" />`;
+}
+
+function infectColor(p) {
+  // verde (140) -> vermelho (0)
+  const hue = Math.round(140 * (1 - p/100));
+  return `hsl(${hue} 85% 45%)`;
+}
+
+/* ---------- 5. CONSTRUÇÃO ESTÁTICA DA UI ---------- */
+function buildStatics() {
+  // Atributos adicionais
+  const ag = $('#attrGrid');
+  ag.innerHTML = ATTRS.map(a => `
+    <div class="cartoon-sm bg-white p-3 flex flex-col items-center gap-1">
+      <i data-lucide="${a.icon}" class="w-6 h-6 text-grape"></i>
+      <span class="text-xs font-bold text-ink text-center leading-tight">${a.name}</span>
+      <div class="flex items-center gap-2 mt-1">
+        <button class="cartoon-btn bg-rose-200 w-8 h-8 text-lg leading-none" data-attr="${a.key}" data-dir="-1">−</button>
+        <span id="attr-${a.key}" class="text-2xl font-bold text-ink w-7 text-center">0</span>
+        <button class="cartoon-btn bg-emerald-200 w-8 h-8 text-lg leading-none" data-attr="${a.key}" data-dir="1">+</button>
+      </div>
+    </div>`).join('');
+
+  // Skills
+  const sg = $('#skillGrid');
+  sg.innerHTML = SKILLS.map(s => `
+    <div class="cartoon-sm bg-white p-3 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <i data-lucide="${s.icon}" class="w-5 h-5 text-grape shrink-0"></i>
+        <span class="text-sm font-bold text-ink leading-tight">${s.name}</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        ${[1,2,3,4].map(l => `<button class="skill-dot w-6 h-6 rounded-full border-3 border-ink bg-paper" style="border:3px solid var(--ink)" data-skill="${s.key}" data-level="${l}"></button>`).join('')}
+      </div>
+    </div>`).join('');
+
+  lucide.createIcons();
+}
+
+/* ---------- 6. RENDER / UPDATE ---------- */
+function isFocused(el) { return document.activeElement === el; }
+
+function update() {
+  const t = TYPES[state.type];
+
+  // IDs
+  $('#shortIdLabel').textContent = state.shortId;
+  $('#myShortId').textContent = (gmEditing || readOnly) ? '— (visitando)' : state.shortId;
+
+  // Banners de modo
+  document.body.classList.toggle('read-only', readOnly);
+  $('#spectatorBanner').classList.toggle('hidden-i', !readOnly);
+  $('#gmEditBanner').classList.toggle('hidden-i', !gmEditing);
+  if (readOnly) $('#spectatorText').textContent = `Modo Espectador — ${state.name || 'Siny'} (${state.shortId}). Somente leitura.`;
+  if (gmEditing) $('#gmEditText').textContent = `Narrador editando: ${state.name || 'Siny'} (${state.shortId}).`;
+
+  // Tipo / textos
+  if (!isFocused($('#typeSelect'))) $('#typeSelect').value = state.type;
+  if (!isFocused($('#nameInput'))) $('#nameInput').value = state.name;
+  if (!isFocused($('#workInput'))) $('#workInput').value = state.work;
+  if (!isFocused($('#abilityInput'))) $('#abilityInput').value = state.ability;
+  $('#freeMode').checked = !!state.freeMode;
+
+  // Avatares
+  $('#avatarNormal').innerHTML = avatarMarkup(state.avatarNormal);
+  $('#avatarCorrupted').innerHTML = avatarMarkup(state.avatarCorrupted);
+
+  // Infecção
+  const inf = clamp(state.infection, 0, 100);
+  $('#infectPct').textContent = inf + '%';
+  $('#infectBar').style.width = inf + '%';
+  $('#infectBar').style.background = infectColor(inf);
+  if (!isFocused($('#infectInput'))) $('#infectInput').value = inf;
+
+  // Vida / Sanidade (anel + número)
+  setRing('#lifeRing', state.life.current, state.life.max);
+  setRing('#sanityRing', state.sanity.current, state.sanity.max);
+  if (!isFocused($('#lifeInput'))) $('#lifeInput').value = state.life.current;
+  if (!isFocused($('#sanityInput'))) $('#sanityInput').value = state.sanity.current;
+  $('#lifeMax').textContent = '/ ' + state.life.max;
+  $('#sanityMax').textContent = '/ ' + state.sanity.max;
+
+  // Atributos adicionais + pool
+  ATTRS.forEach(a => { $('#attr-'+a.key).textContent = state.attributes[a.key]; });
+  const attrPool = t.attrPoints - sum(state.attributes);
+  $('#attrPool').textContent = attrPool;
+  $('#attrTotal').textContent = t.attrPoints;
+  $('#attrPoolPill').classList.toggle('bg-rose-500', attrPool < 0);
+  $('#attrPoolPill').classList.toggle('bg-grape', attrPool >= 0);
+
+  // Skills + pool de treino
+  SKILLS.forEach(s => {
+    const lvl = state.skills[s.key];
+    document.querySelectorAll(`[data-skill="${s.key}"]`).forEach(btn => {
+      const filled = (+btn.dataset.level) <= lvl;
+      btn.style.background = filled ? '#10b981' : '#fdfaf6';
+    });
+  });
+  const trainPool = t.trainPoints - sum(state.skills);
+  $('#trainPool').textContent = trainPool;
+  $('#trainTotal').textContent = t.trainPoints;
+  $('#trainPoolPill').classList.toggle('bg-rose-500', trainPool < 0);
+  $('#trainPoolPill').classList.toggle('bg-emerald-500', trainPool >= 0);
+
+  // Corrupção
+  const overlay = $('#corruptOverlay');
+  if (state.corrupted) {
+    overlay.classList.remove('hidden-i');
+    $('#avatarNormal').classList.add('monsterShake');
+    $('#avatarCorrupted').classList.add('monsterShake');
+  } else {
+    overlay.classList.add('hidden-i');
+    $('#avatarNormal').classList.remove('monsterShake');
+    $('#avatarCorrupted').classList.remove('monsterShake');
+  }
+
+  lucide.createIcons();
+}
+
+function setRing(sel, cur, max) {
+  const ring = $(sel);
+  const frac = max > 0 ? clamp(cur/max, 0, 1) : 0;
+  ring.style.strokeDashoffset = (C * (1 - frac)).toFixed(1);
+}
+
+/* ---------- 7. MECÂNICAS ---------- */
+function checkTransformation() {
+  // Corrupção é instantânea e permanece até a purificação.
+  if (state.sanity.current <= 0 || state.infection >= 100) {
+    state.corrupted = true;
+  }
+}
+
+function commit() {
+  state.updatedAt = Date.now();
+  checkTransformation();
+  update();
+  persist();
+}
+
+function persist() {
+  if (readOnly) return;
+  const clean = cleanSheet(state);
+  const json = JSON.stringify(clean);
+  if (json === lastSavedJSON) return;
+  lastSavedJSON = json;
+
+  if (mode === 'cloud') {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      try { await setDoc(sheetRef(activeDocId), clean, { merge: true }); }
+      catch (e) { console.error(e); toast('Erro ao salvar no Planeta.'); }
+    }, 350);
+  } else {
+    localStorage.setItem('sinay-sheet-' + activeDocId, json);
+    localIndexAdd(activeDocId);
+  }
+}
+
+function cleanSheet(s) {
+  return {
+    shortId: s.shortId, ownerId: s.ownerId, type: s.type,
+    name: s.name, work: s.work, ability: s.ability,
+    avatarNormal: s.avatarNormal, avatarCorrupted: s.avatarCorrupted,
+    infection: clamp(s.infection,0,100),
+    life: { current: s.life.current, max: s.life.max },
+    sanity: { current: s.sanity.current, max: s.sanity.max },
+    attributes: { ...s.attributes }, skills: { ...s.skills },
+    freeMode: !!s.freeMode, corrupted: !!s.corrupted, updatedAt: s.updatedAt,
+  };
+}
+
+function applyType(key, { reset }) {
+  const t = TYPES[key];
+  state.type = key;
+  if (reset) {
+    state.life = { current: t.life, max: t.life };
+    state.sanity = { current: t.sanity, max: t.sanity };
+    state.attributes = { agilidade:0, blefe:0, poder:0, furtividade:0 };
+    state.skills = { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 };
+    state.ability = t.ability;
+    state.infection = 0;
+    state.corrupted = false;
+  } else {
+    // só atualiza os tetos
+    state.life.max = t.life;
+    state.sanity.max = t.sanity;
+  }
+}
+
+/* ---------- 8. FIREBASE ---------- */
+function sheetRef(id) { return doc(db, `artifacts/${appId}/public/data/sheets/${id}`); }
+function sheetsCol()  { return collection(db, `artifacts/${appId}/public/data/sheets`); }
+
+async function initFirebase() {
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    mode = 'cloud';
+    await new Promise((resolve, reject) => {
+      onAuthStateChanged(auth, (user) => { if (user) { myUserId = user.uid; resolve(); } });
+      (initialAuthToken ? signInWithCustomToken(auth, initialAuthToken) : signInAnonymously(auth))
+        .catch(reject);
+    });
+    setConn('ok', 'Conectado ao Planeta');
+  } catch (e) {
+    console.warn('Falha no Firebase, indo pro modo local:', e);
+    startLocal();
+  }
+}
+
+function startLocal() {
+  mode = 'local';
+  myUserId = localStorage.getItem('sinay-local-uid');
+  if (!myUserId) { myUserId = 'local-' + genShortId(); localStorage.setItem('sinay-local-uid', myUserId); }
+  setConn('local', 'Modo Local');
+}
+
+function setConn(kind, text) {
+  const dot = $('#connDot');
+  const colors = { ok:'#22c55e', local:'#f59e0b', err:'#ef4444' };
+  dot.style.background = colors[kind]; dot.style.color = colors[kind];
+  dot.classList.toggle('pulse-dot', kind !== 'err');
+  $('#connText').textContent = text;
+}
+
+/* Carrega um doc no app. readOnlyFlag = espectador; gmFlag = narrador editando */
+async function loadDoc(docId, { readOnlyFlag = false, gmFlag = false } = {}) {
+  if (unsub) { unsub(); unsub = null; }
+  activeDocId = docId;
+  readOnly = readOnlyFlag;
+  gmEditing = gmFlag;
+
+  if (mode === 'cloud') {
+    unsub = onSnapshot(sheetRef(docId), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (JSON.stringify(data) === lastSavedJSON) return; // ignora eco do próprio save
+        mergeIntoState(data);
+        checkTransformation();
+        update();
+      } else if (docId === myUserId) {
+        // primeira vez: cria minha ficha
+        state = defaultSheet(myUserId);
+        lastSavedJSON = '';
+        commit();
+      } else {
+        toast('Ficha não encontrada.');
+      }
+    }, (err) => { console.error(err); setConn('err','Erro de conexão'); });
+  } else {
+    const raw = localStorage.getItem('sinay-sheet-' + docId);
+    if (raw) { mergeIntoState(JSON.parse(raw)); checkTransformation(); update(); }
+    else if (docId === myUserId) { state = defaultSheet(myUserId); commit(); }
+    else { toast('Ficha local não encontrada.'); }
+  }
+}
+
+function mergeIntoState(data) {
+  const base = defaultSheet(data.ownerId || myUserId);
+  state = {
+    ...base, ...data,
+    life:   { ...base.life,   ...(data.life||{}) },
+    sanity: { ...base.sanity, ...(data.sanity||{}) },
+    attributes: { ...base.attributes, ...(data.attributes||{}) },
+    skills: { ...base.skills, ...(data.skills||{}) },
+  };
+}
+
+/* índice local de fichas (para o hub do narrador no modo local) */
+function localIndexAdd(id) {
+  const idx = JSON.parse(localStorage.getItem('sinay-index') || '[]');
+  if (!idx.includes(id)) { idx.push(id); localStorage.setItem('sinay-index', JSON.stringify(idx)); }
+}
+
+/* ---------- 9. EVENTOS DE EDIÇÃO ---------- */
+function bindEvents() {
+  // Tipo psicológico
+  $('#typeSelect').addEventListener('change', async (e) => {
+    const key = e.target.value;
+    const ok = await confirmModal('Trocar Tipo Psicológico?',
+      `Isso redefine Vida, Sanidade, Atributos, Treinos e Habilidade para os valores base de ${TYPES[key].emoji} ${TYPES[key].name}.`);
+    if (ok) { applyType(key, { reset:true }); commit(); }
+    else { update(); } // restaura o select
+  });
+
+  // Campos de texto
+  $('#nameInput').addEventListener('input', e => { state.name = e.target.value; persistSoft(); });
+  $('#workInput').addEventListener('input', e => { state.work = e.target.value; persistSoft(); });
+  $('#abilityInput').addEventListener('input', e => { state.ability = e.target.value; persistSoft(); });
+
+  // Free mode
+  $('#freeMode').addEventListener('change', e => { state.freeMode = e.target.checked; commit(); });
+
+  // Infecção
+  document.querySelectorAll('[data-infect]').forEach(b =>
+    b.addEventListener('click', () => { if(guard())return; state.infection = clamp(state.infection + (+b.dataset.infect),0,100); commit(); }));
+  $('#infectInput').addEventListener('change', e => { if(guard())return; state.infection = clamp(+e.target.value||0,0,100); commit(); });
+
+  // Vida / Sanidade
+  document.querySelectorAll('[data-life]').forEach(b =>
+    b.addEventListener('click', () => { if(guard())return; state.life.current = clamp(state.life.current + (+b.dataset.life),0,state.life.max); commit(); }));
+  document.querySelectorAll('[data-sanity]').forEach(b =>
+    b.addEventListener('click', () => { if(guard())return; state.sanity.current = clamp(state.sanity.current + (+b.dataset.sanity),0,state.sanity.max); commit(); }));
+  $('#lifeInput').addEventListener('change', e => { if(guard())return; state.life.current = clamp(+e.target.value||0,0,state.life.max); commit(); });
+  $('#sanityInput').addEventListener('change', e => { if(guard())return; state.sanity.current = clamp(+e.target.value||0,0,state.sanity.max); commit(); });
+
+  // Atributos +/- (delegação)
+  document.addEventListener('click', (e) => {
+    const ab = e.target.closest('[data-attr]');
+    if (ab) {
+      if (guard()) return;
+      const key = ab.dataset.attr, dir = +ab.dataset.dir;
+      const t = TYPES[state.type];
+      const pool = t.attrPoints - sum(state.attributes);
+      if (dir > 0 && !state.freeMode && pool <= 0) { shake($('#attrPoolPill')); return; }
+      state.attributes[key] = clamp(state.attributes[key] + dir, 0, 99);
+      commit();
+      return;
+    }
+    const sd = e.target.closest('[data-skill]');
+    if (sd) {
+      if (guard()) return;
+      setSkill(sd.dataset.skill, +sd.dataset.level);
+      return;
+    }
+    const av = e.target.closest('[data-avatar]');
+    if (av) { if (guard()) return; handleAvatar(av); return; }
+  });
+
+  // Avatar upload
+  $('#avatarFile').addEventListener('change', onAvatarFile);
+
+  // Backup
+  $('#backupRefresh').addEventListener('click', () => { $('#backupBox').value = makeBackup(); toast('Código gerado.'); });
+  $('#backupCopy').addEventListener('click', () => { copy($('#backupBox').value || makeBackup()); toast('Copiado!'); });
+  $('#backupLoad').addEventListener('click', loadBackup);
+
+  // Share / GM
+  $('#shareBtn').addEventListener('click', openShare);
+  $('#gmBtn').addEventListener('click', () => $('#gmGate').classList.remove('hidden-i'));
+  $('#gmEnter').addEventListener('click', tryGmEnter);
+  $('#gmPass').addEventListener('keydown', e => { if (e.key==='Enter') tryGmEnter(); });
+  $('#purifyBtn').addEventListener('click', purify);
+  $('#cloneBtn').addEventListener('click', cloneSheet);
+  $('#gmReturnBtn').addEventListener('click', () => loadDoc(myUserId));
+  $('#loadIdBtn').addEventListener('click', quickLoad);
+  $('#loadIdInput').addEventListener('keydown', e => { if (e.key==='Enter') quickLoad(); });
+
+  // Share popup buttons
+  $('#copyLink').addEventListener('click', () => { copy($('#shareLink').value); toast('Link copiado!'); });
+  $('#copyMsg').addEventListener('click', () => { copy($('#shareMsg').value); toast('Mensagem copiada!'); });
+
+  // Fechar modais
+  document.querySelectorAll('[data-close]').forEach(b =>
+    b.addEventListener('click', () => $('#'+b.dataset.close).classList.add('hidden-i')));
+  document.querySelectorAll('.fixed.inset-0').forEach(m =>
+    m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden-i'); }));
+}
+
+let softTimer = null;
+function persistSoft() { clearTimeout(softTimer); softTimer = setTimeout(() => persist(), 400); }
+function guard() { if (readOnly) { toast('Modo somente leitura.'); return true; } return false; }
+function shake(el) { el.classList.add('monsterShake'); setTimeout(()=>el.classList.remove('monsterShake'), 350); }
+
+function purify() {
+  if (guard()) return;
+  const t = TYPES[state.type];
+  state.sanity.current = t.sanity;
+  state.infection = 0;
+  state.corrupted = false;
+  commit();
+  toast('Siny purificado! ✨');
+}
+
+function setSkill(key, level) {
+  const cur = state.skills[key];
+  let next = (level === cur) ? cur - 1 : level;
+  next = clamp(next, 0, 4);
+  const delta = next - cur;
+  const t = TYPES[state.type];
+  const pool = t.trainPoints - sum(state.skills);
+  if (delta > 0 && !state.freeMode && pool < delta) { shake($('#trainPoolPill')); return; }
+  state.skills[key] = next;
+  commit();
+}
+
+/* ---------- Avatares ---------- */
+let pendingAvatarSlot = null;
+function handleAvatar(btn) {
+  const slot = btn.dataset.avatar;       // 'normal' | 'corrupted'
+  if (btn.dataset.tpl) {
+    if (slot === 'normal') state.avatarNormal = 'tpl:'+btn.dataset.tpl;
+    else state.avatarCorrupted = 'tpl:'+btn.dataset.tpl;
+    commit();
+  } else if (btn.dataset.act === 'upload') {
+    pendingAvatarSlot = slot;
+    $('#avatarFile').click();
+  }
+}
+function onAvatarFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 900*1024) { toast('Imagem muito grande (máx ~900KB).'); e.target.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    if (pendingAvatarSlot === 'normal') state.avatarNormal = reader.result;
+    else state.avatarCorrupted = reader.result;
+    commit();
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+/* ---------- Backup Base64 ---------- */
+function makeBackup() {
+  return btoa(unescape(encodeURIComponent(JSON.stringify(cleanSheet(state)))));
+}
+async function loadBackup() {
+  if (guard()) return;
+  const code = $('#backupBox').value.trim();
+  if (!code) { toast('Cole um código primeiro.'); return; }
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(code))));
+    const ok = await confirmModal('Carregar backup?', 'Isso substitui os dados atuais da ficha por este código.');
+    if (!ok) return;
+    data.ownerId = state.ownerId; data.shortId = data.shortId || state.shortId;
+    mergeIntoState(data);
+    commit();
+    toast('Backup carregado!');
+  } catch (err) { toast('Código inválido.'); }
+}
+
+/* ---------- Compartilhar ---------- */
+function shareUrl() {
+  const base = location.origin + location.pathname;
+  return `${base}?siny=${encodeURIComponent(activeDocId)}`;
+}
+function openShare() {
+  const url = shareUrl();
+  $('#shareLink').value = url;
+  const msg = `🪐 *Planeta Sinay RPG* 🪐\n` +
+    `Veja a ficha do meu Siny *${state.name || 'sem nome'}* (${state.shortId})!\n` +
+    `${TYPES[state.type].emoji} ${TYPES[state.type].name} · ❤️ ${state.life.current}/${state.life.max} · 🧠 ${state.sanity.current}/${state.sanity.max} · ☣️ ${state.infection}%\n` +
+    `👉 ${url}`;
+  $('#shareMsg').value = msg;
+  $('#waLink').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  $('#shareModal').classList.remove('hidden-i');
+}
+
+/* ---------- Clonar (espectador -> minha ficha) ---------- */
+async function cloneSheet() {
+  if (mode !== 'cloud') { toast('Clonar exige conexão com o Planeta (Firebase).'); return; }
+  const ok = await confirmModal('Clonar esta ficha?', 'Uma cópia editável será salva sob o seu próprio ID.');
+  if (!ok) return;
+  const copyState = cleanSheet(state);
+  copyState.ownerId = myUserId;
+  copyState.shortId = genShortId();
+  try {
+    await setDoc(sheetRef(myUserId), copyState, { merge: false });
+    // limpa o parâmetro de URL e recarrega a minha ficha
+    history.replaceState(null, '', location.origin + location.pathname);
+    readOnly = false; gmEditing = false;
+    lastSavedJSON = '';
+    await loadDoc(myUserId);
+    toast('Ficha clonada para o seu ID!');
+  } catch (e) { console.error(e); toast('Erro ao clonar.'); }
+}
+
+/* ---------- Carregamento rápido por ID curto ---------- */
+async function quickLoad() {
+  const code = $('#loadIdInput').value.trim().toUpperCase();
+  if (!code) return;
+  if (mode !== 'cloud') { toast('Busca por ID exige conexão com o Planeta.'); return; }
+  try {
+    const q = query(sheetsCol(), where('shortId','==', code));
+    const res = await getDocs(q);
+    if (res.empty) { toast('Nenhum Siny com esse ID.'); return; }
+    const found = res.docs[0];
+    location.href = location.origin + location.pathname + '?siny=' + encodeURIComponent(found.id);
+  } catch (e) { console.error(e); toast('Erro na busca.'); }
+}
+
+/* ---------- 10. PAINEL DO NARRADOR ---------- */
+function tryGmEnter() {
+  const pass = $('#gmPass').value;
+  if (pass !== GM_PASSWORD) { $('#gmPassErr').classList.remove('hidden-i'); shake($('#gmPass')); return; }
+  $('#gmPassErr').classList.add('hidden-i');
+  $('#gmPass').value = '';
+  $('#gmGate').classList.add('hidden-i');
+  openGmHub();
+}
+
+function openGmHub() {
+  $('#gmHub').classList.remove('hidden-i');
+  if (mode === 'cloud') {
+    if (unsubGm) unsubGm();
+    unsubGm = onSnapshot(sheetsCol(), (snap) => {
+      gmSheets = {};
+      snap.forEach(d => { gmSheets[d.id] = d.data(); });
+      renderGmList();
+    }, (e)=>{ console.error(e); });
+  } else {
+    const idx = JSON.parse(localStorage.getItem('sinay-index') || '[]');
+    gmSheets = {};
+    idx.forEach(id => { const r = localStorage.getItem('sinay-sheet-'+id); if (r) gmSheets[id] = JSON.parse(r); });
+    renderGmList();
+  }
+}
+
+function renderGmList() {
+  const ids = Object.keys(gmSheets);
+  const wrap = $('#gmList');
+  if (!ids.length) { wrap.innerHTML = `<p class="text-ink/60 font-semibold text-center py-6">Nenhum Siny ativo na mesa ainda.</p>`; return; }
+  wrap.innerHTML = ids.map(id => {
+    const s = gmSheets[id];
+    const t = TYPES[s.type] || TYPES.blindado;
+    const corrupted = (s.sanity?.current <= 0) || (s.infection >= 100) || s.corrupted;
+    return `
+    <div class="cartoon-sm ${corrupted?'bg-red-100':'bg-white'} p-3">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-2xl">${corrupted?'☣️':t.emoji}</span>
+          <div class="min-w-0">
+            <div class="font-bold text-ink truncate">${escapeHtml(s.name || 'Siny sem nome')} ${corrupted?'<span class="text-red-600">(Corrompido!)</span>':''}</div>
+            <div class="text-xs font-semibold text-ink/60">${s.shortId || id.slice(0,10)} · ${escapeHtml(s.work||'—')}</div>
+          </div>
+        </div>
+        <div class="flex gap-2 text-xs font-bold">
+          <span class="px-2 py-0.5 rounded-lg bg-rose-100 border-2 border-ink">❤️ ${s.life?.current ?? '?'}</span>
+          <span class="px-2 py-0.5 rounded-lg bg-sky-100 border-2 border-ink">🧠 ${s.sanity?.current ?? '?'}</span>
+          <span class="px-2 py-0.5 rounded-lg bg-emerald-100 border-2 border-ink">☣️ ${s.infection ?? 0}%</span>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-3 flex-wrap">
+        <button class="cartoon-btn bg-rose-300 px-2.5 py-1 text-xs" data-gm="dano" data-id="${id}">Dano −10 ❤️</button>
+        <button class="cartoon-btn bg-sky-300 px-2.5 py-1 text-xs" data-gm="panico" data-id="${id}">Pânico −10 🧠</button>
+        <button class="cartoon-btn bg-emerald-300 px-2.5 py-1 text-xs" data-gm="gosma" data-id="${id}">Gosma +10 ☣️</button>
+        <button class="cartoon-btn bg-amber-200 px-2.5 py-1 text-xs" data-gm="abrir" data-id="${id}">Abrir Ficha</button>
+        <button class="cartoon-btn bg-red-400 px-2.5 py-1 text-xs" data-gm="del" data-id="${id}">Deletar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-gm]').forEach(b => b.addEventListener('click', () => gmAction(b.dataset.gm, b.dataset.id)));
+}
+
+async function gmAction(act, id) {
+  const s = gmSheets[id];
+  if (!s) return;
+  if (act === 'abrir') {
+    $('#gmHub').classList.add('hidden-i');
+    await loadDoc(id, { gmFlag: id !== myUserId });
+    return;
+  }
+  if (act === 'del') {
+    const ok = await confirmModal('Deletar ficha?', `Remover ${s.name || s.shortId || id} permanentemente da mesa?`);
+    if (!ok) return;
+    if (mode === 'cloud') { try { await deleteDoc(sheetRef(id)); } catch(e){ console.error(e);} }
+    else { localStorage.removeItem('sinay-sheet-'+id); const idx = JSON.parse(localStorage.getItem('sinay-index')||'[]').filter(x=>x!==id); localStorage.setItem('sinay-index', JSON.stringify(idx)); delete gmSheets[id]; renderGmList(); }
+    toast('Ficha deletada.');
+    return;
+  }
+  // efeitos
+  const upd = {};
+  if (act === 'dano')   upd.life   = { current: clamp((s.life?.current??0) - 10, 0, s.life?.max ?? 999),   max: s.life?.max ?? 100 };
+  if (act === 'panico') upd.sanity = { current: clamp((s.sanity?.current??0) - 10, 0, s.sanity?.max ?? 999), max: s.sanity?.max ?? 100 };
+  if (act === 'gosma')  upd.infection = clamp((s.infection??0) + 10, 0, 100);
+  // recalcula corrupção
+  const newSan = (upd.sanity ? upd.sanity.current : s.sanity?.current) ?? 100;
+  const newInf = (upd.infection !== undefined ? upd.infection : s.infection) ?? 0;
+  if (newSan <= 0 || newInf >= 100) upd.corrupted = true;
+  upd.updatedAt = Date.now();
+
+  if (mode === 'cloud') {
+    try { await setDoc(sheetRef(id), upd, { merge:true }); } catch(e){ console.error(e); toast('Erro.'); }
+  } else {
+    const merged = { ...s, ...upd };
+    localStorage.setItem('sinay-sheet-'+id, JSON.stringify(merged));
+    gmSheets[id] = merged;
+    if (id === activeDocId) { mergeIntoState(merged); checkTransformation(); update(); }
+    renderGmList();
+  }
+}
+
+/* ---------- helpers ---------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function copy(text){ if(navigator.clipboard) navigator.clipboard.writeText(text).catch(()=>fallbackCopy(text)); else fallbackCopy(text); }
+function fallbackCopy(text){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} ta.remove(); }
+
+/* ---------- 11. BOOT ---------- */
+async function boot() {
+  buildStatics();
+  bindEvents();
+
+  if (CONFIGURED) await initFirebase();
+  else startLocal();
+
+  // Espectador via ?siny=
+  const params = new URLSearchParams(location.search);
+  const spectate = params.get('siny');
+  if (spectate && spectate !== myUserId) {
+    await loadDoc(spectate, { readOnlyFlag: true });
+  } else {
+    await loadDoc(myUserId);
+  }
+  update();
+}
+
+boot();
+</script>
+</body>
+</html>
