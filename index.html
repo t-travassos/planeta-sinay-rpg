@@ -372,6 +372,36 @@
     <textarea id="abilityInput" rows="3" class="cartoon-input px-3 py-2 w-full resize-y" placeholder="Efeitos especiais da mente ou profissão do Siny…"></textarea>
   </section>
 
+  <!-- ================= D2. FORMA CORROMPIDA (Mestre) ================= -->
+  <section class="cartoon p-5" data-editable>
+    <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+      <div class="flex items-center gap-2">
+        <i data-lucide="skull" class="w-6 h-6 text-grape"></i>
+        <h2 class="text-xl font-bold text-ink">Forma Corrompida 👹</h2>
+      </div>
+      <span id="corruptActiveBadge" class="hidden-i cartoon-sm bg-red-500 text-white px-3 py-1 text-xs font-bold slime-overlay">☣️ ATIVA AGORA</span>
+    </div>
+    <p id="corruptGmHint" class="text-sm text-ink/60 font-semibold mb-3">Os status e habilidades do monstro são definidos pelo <b>Mestre</b>.</p>
+    <div class="space-y-3">
+      <label class="block"><span class="text-xs font-bold text-ink uppercase tracking-wide">Nome do monstro</span>
+        <input id="cfName" class="cartoon-input px-3 py-2 w-full mt-1" placeholder="Ex.: Gosmonstro Faminto" /></label>
+      <div class="flex gap-2 flex-wrap items-end">
+        <label class="block"><span class="text-xs font-bold text-life uppercase tracking-wide">❤️ Vida</span>
+          <input id="cfLife" type="number" min="0" class="cartoon-input px-2 py-2 w-24 mt-1 text-center" /></label>
+        <label class="block"><span class="text-[11px] font-bold text-ink uppercase">Agilidade</span>
+          <input id="cf-agilidade" type="number" min="0" class="cartoon-input px-1 py-2 w-16 mt-1 text-center" /></label>
+        <label class="block"><span class="text-[11px] font-bold text-ink uppercase">Blefe</span>
+          <input id="cf-blefe" type="number" min="0" class="cartoon-input px-1 py-2 w-16 mt-1 text-center" /></label>
+        <label class="block"><span class="text-[11px] font-bold text-ink uppercase">Poder</span>
+          <input id="cf-poder" type="number" min="0" class="cartoon-input px-1 py-2 w-16 mt-1 text-center" /></label>
+        <label class="block"><span class="text-[11px] font-bold text-ink uppercase">Furtiv.</span>
+          <input id="cf-furtividade" type="number" min="0" class="cartoon-input px-1 py-2 w-16 mt-1 text-center" /></label>
+      </div>
+      <label class="block"><span class="text-xs font-bold text-ink uppercase tracking-wide">Habilidades corrompidas</span>
+        <textarea id="cfAbility" rows="2" class="cartoon-input px-3 py-2 w-full mt-1 resize-y" placeholder="Poderes da forma monstro (ex.: cospe gosma que infecta; regenera ao tocar poças…)"></textarea></label>
+    </div>
+  </section>
+
   <!-- ================= E. ATRIBUTOS VITAIS ================= -->
   <section class="cartoon p-5" data-editable>
     <div class="flex items-center justify-between gap-2 mb-4 flex-wrap">
@@ -672,6 +702,11 @@ function defaultSheet(ownerId, shortId) {
     bonusAttrPoints: 0,   // pontos extras de atributo concedidos pelo Mestre
     bonusTrainPoints: 0,  // pontos extras de treino concedidos pelo Mestre
     items: [],            // itens e amuletos: { kind:'item'|'amuleto', name, qty, desc }
+    corruptedForm: {      // forma monstro (definida pelo Mestre): status e habilidades próprios
+      name: '', life: 100,
+      attributes: { agilidade: 0, blefe: 0, poder: 0, furtividade: 0 },
+      ability: '',
+    },
     corrupted: false,
     updatedAt: Date.now(),
   };
@@ -829,6 +864,25 @@ function buildStatics() {
 /* ---------- 6. RENDER / UPDATE ---------- */
 function isFocused(el) { return document.activeElement === el; }
 
+/* Forma corrompida (status/habilidades do monstro) — editável só pelo Mestre */
+function renderCorruptedForm() {
+  const cf = state.corruptedForm || cleanCorruptedForm();
+  const lock = !isGM || readOnly;
+  const set = (sel, val) => { const el = $(sel); if (!el) return; if (document.activeElement !== el) el.value = val; el.disabled = lock; };
+  set('#cfName', cf.name || '');
+  set('#cfLife', cf.life ?? 0);
+  set('#cf-agilidade', cf.attributes.agilidade ?? 0);
+  set('#cf-blefe', cf.attributes.blefe ?? 0);
+  set('#cf-poder', cf.attributes.poder ?? 0);
+  set('#cf-furtividade', cf.attributes.furtividade ?? 0);
+  set('#cfAbility', cf.ability || '');
+  $('#corruptActiveBadge').classList.toggle('hidden-i', !state.corrupted);
+  const hint = $('#corruptGmHint');
+  if (hint && document.activeElement !== hint) hint.textContent = isGM
+    ? 'Modo Mestre: defina os status e habilidades do monstro abaixo.'
+    : 'Os status e habilidades do monstro são definidos pelo Mestre.';
+}
+
 function update() {
   const t = TYPES[state.type] || TYPES.blindado;  // fallback: nunca quebra a ficha
 
@@ -913,6 +967,7 @@ function update() {
 
   // Itens & Amuletos (preserva foco se o usuário estiver digitando)
   renderInventory();
+  renderCorruptedForm();
 }
 
 function setRing(sel, cur, max) {
@@ -987,7 +1042,22 @@ function cleanSheet(s) {
       bonusAttr: ['agilidade','blefe','poder','furtividade'].includes(it.bonusAttr) ? it.bonusAttr : '',
       bonusVal: Math.trunc(+it.bonusVal || 0),
     })),
+    corruptedForm: cleanCorruptedForm(s.corruptedForm),
     corrupted: !!s.corrupted, updatedAt: s.updatedAt,
+  };
+}
+
+function cleanCorruptedForm(cf) {
+  cf = cf || {};
+  const a = cf.attributes || {};
+  return {
+    name: String(cf.name || ''),
+    life: Math.max(0, Math.trunc(+cf.life || 0)),
+    attributes: {
+      agilidade: Math.max(0, +a.agilidade || 0), blefe: Math.max(0, +a.blefe || 0),
+      poder: Math.max(0, +a.poder || 0), furtividade: Math.max(0, +a.furtividade || 0),
+    },
+    ability: String(cf.ability || ''),
   };
 }
 
@@ -1088,6 +1158,7 @@ function mergeIntoState(data) {
   };
   if (!TYPES[state.type]) state.type = 'blindado';   // tipo inválido -> padrão seguro
   if (!Array.isArray(state.items)) state.items = [];
+  state.corruptedForm = cleanCorruptedForm(state.corruptedForm);   // normaliza a forma monstro
 }
 
 /* índice local de fichas (para o hub do narrador no modo local) */
@@ -1273,6 +1344,12 @@ function bindEvents() {
   // Backup
   $('#addItemBtn').addEventListener('click', () => addItem('item'));
   $('#addAmuletoBtn').addEventListener('click', () => addItem('amuleto'));
+  // Forma corrompida (só o Mestre)
+  $('#cfName').addEventListener('input', e => { if (!isGM || guard()) return; state.corruptedForm.name = e.target.value; persistSoft(); });
+  $('#cfAbility').addEventListener('input', e => { if (!isGM || guard()) return; state.corruptedForm.ability = e.target.value; persistSoft(); });
+  $('#cfLife').addEventListener('change', e => { if (!isGM || guard()) return; state.corruptedForm.life = Math.max(0, Math.trunc(+e.target.value || 0)); commit(); });
+  ['agilidade','blefe','poder','furtividade'].forEach(k =>
+    $('#cf-' + k).addEventListener('change', e => { if (!isGM || guard()) return; state.corruptedForm.attributes[k] = Math.max(0, +e.target.value || 0); commit(); }));
   $('#itemPhotoFile').addEventListener('change', onItemPhotoFile);
   $('#givePhotoBtn').addEventListener('click', () => $('#givePhotoFile').click());
   $('#givePhotoFile').addEventListener('change', e => { const f = e.target.files[0]; if (f) fileToThumb(f, 180, d => { givePhoto = d; updateGivePreview(); }); e.target.value = ''; });
@@ -1625,6 +1702,7 @@ function applyGmUi() {
   if (a) a.classList.toggle('hidden-i', !isGM);
   if (b) b.classList.toggle('hidden-i', !isGM);
   renderInventory(true);
+  renderCorruptedForm();
 }
 
 function tryGmEnter() {
