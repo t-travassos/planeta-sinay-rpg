@@ -145,6 +145,9 @@
   #toast { transition: opacity .18s ease; }
   #toast.toast-hide { opacity: 0; pointer-events: none; }
 
+  /* indicador de Modo Mestre ativo na sessão */
+  .is-gm #gmBtn { outline: 3px solid #7CFF4F; outline-offset: 2px; }
+
   /* Respeita usuários que pedem menos movimento */
   @media (prefers-reduced-motion: reduce) {
     .goo-droplet, .pulse-dot::after, .slime-overlay { animation: none !important; }
@@ -453,8 +456,8 @@
         <h2 class="text-xl font-bold text-ink">Itens &amp; Amuletos</h2>
       </div>
       <div class="flex gap-2">
-        <button id="addItemBtn" class="cartoon-btn bg-amber-200 px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Item 🎒</button>
-        <button id="addAmuletoBtn" class="cartoon-btn bg-violet-200 px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Amuleto 🔮</button>
+        <button id="addItemBtn" class="hidden-i cartoon-btn bg-amber-200 px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Item 🎒</button>
+        <button id="addAmuletoBtn" class="hidden-i cartoon-btn bg-violet-200 px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Amuleto 🔮</button>
       </div>
     </div>
     <div id="inventoryList" class="space-y-3"></div>
@@ -666,6 +669,7 @@ let myUserId = null;        // uid do Firebase (ou id local)
 let activeDocId = null;     // doc atualmente carregado
 let readOnly = false;       // espectador
 let gmEditing = false;      // narrador editando ficha alheia
+let isGM = sessionStorage.getItem('sinay-gm-active') === '1';  // Mestre na sessão (até fechar a aba)
 let mode = 'local';         // 'cloud' | 'local'
 let db = null, auth = null;
 let unsub = null;           // unsubscribe do snapshot da ficha
@@ -1243,7 +1247,7 @@ function bindEvents() {
 
   // Share / GM
   $('#shareBtn').addEventListener('click', openShare);
-  $('#gmBtn').addEventListener('click', () => $('#gmGate').classList.remove('hidden-i'));
+  $('#gmBtn').addEventListener('click', () => { if (isGM) openGmHub(); else $('#gmGate').classList.remove('hidden-i'); });
   $('#gmEnter').addEventListener('click', tryGmEnter);
   $('#gmPass').addEventListener('keydown', e => { if (e.key==='Enter') tryGmEnter(); });
   $('#purifyBtn').addEventListener('click', purify);
@@ -1343,7 +1347,7 @@ function onAvatarFile(e) {
 
 /* ---------- Itens & Amuletos ---------- */
 function addItem(kind) {
-  if (guard()) return;
+  if (!isGM || guard()) return;   // só o Mestre cria itens
   if (!Array.isArray(state.items)) state.items = [];
   state.items.push({ kind: kind === 'amuleto' ? 'amuleto' : 'item', name: '', qty: 1, desc: '', photo: '' });
   persist();
@@ -1440,23 +1444,45 @@ function renderInventory(force) {
   // não reconstrói enquanto o usuário digita aqui (preserva o foco/cursor)
   if (!force && wrap.contains(document.activeElement)) return;
   const items = Array.isArray(state.items) ? state.items : [];
+  const canEdit = isGM && !readOnly;   // só o Mestre edita/cria itens
   if (!items.length) {
-    wrap.innerHTML = '<p class="text-sm text-ink/50 font-semibold">Mochila vazia. Use os botões acima para adicionar um Item 🎒 ou um Amuleto 🔮.</p>';
+    wrap.innerHTML = canEdit
+      ? '<p class="text-sm text-ink/50 font-semibold">Mochila vazia. Use os botões acima para adicionar um Item 🎒 ou um Amuleto 🔮.</p>'
+      : '<p class="text-sm text-ink/50 font-semibold">Mochila vazia — os itens e amuletos são concedidos pelo Mestre. 🎁</p>';
     return;
   }
-  const ro = readOnly ? 'disabled' : '';
+
+  if (!canEdit) {
+    // visão do jogador: somente leitura
+    wrap.innerHTML = items.map((it) => {
+      const amul = it.kind === 'amuleto';
+      const photo = (it.photo && AVATAR_DATA_RE.test(it.photo)) ? `<img src="${it.photo}" class="w-full h-full object-cover">` : (amul ? '🔮' : '🎒');
+      return `
+      <div class="cartoon-sm ${amul ? 'bg-violet-50' : 'bg-amber-50'} p-3 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-white overflow-hidden flex items-center justify-center text-xl shrink-0" style="border:3px solid var(--ink)">${photo}</div>
+        <div class="min-w-0">
+          <div class="font-bold text-ink truncate">${escapeHtml(it.name || '(sem nome)')}${amul ? '' : ` <span class="text-ink/50 text-sm">x${(+it.qty || 1)}</span>`}</div>
+          ${it.desc ? `<div class="text-sm font-semibold text-grape truncate">${escapeHtml(it.desc)}</div>` : ''}
+        </div>
+        <span class="ml-auto text-xs font-bold ${amul ? 'text-violet-700' : 'text-amber-700'}">${amul ? '🔮 Amuleto' : '🎒 Item'}</span>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // visão do Mestre: editável
   wrap.innerHTML = items.map((it, i) => {
     const amul = it.kind === 'amuleto';
     return `
     <div class="cartoon-sm ${amul ? 'bg-violet-50' : 'bg-amber-50'} p-3" data-inv="${i}">
       <div class="flex items-center gap-2 flex-wrap">
-        <button class="cartoon-btn bg-white p-0 w-11 h-11 overflow-hidden flex items-center justify-center text-lg leading-none" data-inv-photo="${i}" title="Foto do item" ${ro}>${it.photo && AVATAR_DATA_RE.test(it.photo) ? `<img src="${it.photo}" class="w-full h-full object-cover">` : '📷'}</button>
-        <button class="cartoon-btn bg-paper px-2 py-1 text-xl leading-none" data-inv-kind="${i}" title="Alternar Item/Amuleto" ${ro}>${amul ? '🔮' : '🎒'}</button>
-        <input class="cartoon-input px-3 py-1.5 grow min-w-[8rem]" data-inv-name="${i}" value="${escapeHtml(it.name)}" placeholder="${amul ? 'Nome do amuleto' : 'Nome do item'}" ${ro} />
-        ${amul ? '' : `<input type="number" min="1" class="cartoon-input px-2 py-1.5 w-16 text-center" data-inv-qty="${i}" value="${(+it.qty || 1)}" title="Quantidade" ${ro} />`}
-        <button class="cartoon-btn bg-rose-300 px-2.5 py-1.5" data-inv-del="${i}" aria-label="Remover" ${ro}>✕</button>
+        <button class="cartoon-btn bg-white p-0 w-11 h-11 overflow-hidden flex items-center justify-center text-lg leading-none" data-inv-photo="${i}" title="Foto do item">${it.photo && AVATAR_DATA_RE.test(it.photo) ? `<img src="${it.photo}" class="w-full h-full object-cover">` : '📷'}</button>
+        <button class="cartoon-btn bg-paper px-2 py-1 text-xl leading-none" data-inv-kind="${i}" title="Alternar Item/Amuleto">${amul ? '🔮' : '🎒'}</button>
+        <input class="cartoon-input px-3 py-1.5 grow min-w-[8rem]" data-inv-name="${i}" value="${escapeHtml(it.name)}" placeholder="${amul ? 'Nome do amuleto' : 'Nome do item'}" />
+        ${amul ? '' : `<input type="number" min="1" class="cartoon-input px-2 py-1.5 w-16 text-center" data-inv-qty="${i}" value="${(+it.qty || 1)}" title="Quantidade" />`}
+        <button class="cartoon-btn bg-rose-300 px-2.5 py-1.5" data-inv-del="${i}" aria-label="Remover">✕</button>
       </div>
-      <input class="cartoon-input px-3 py-1.5 w-full mt-2 text-sm" data-inv-desc="${i}" value="${escapeHtml(it.desc)}" placeholder="${amul ? 'Efeito mágico do amuleto…' : 'Para que serve / descrição…'}" ${ro} />
+      <input class="cartoon-input px-3 py-1.5 w-full mt-2 text-sm" data-inv-desc="${i}" value="${escapeHtml(it.desc)}" placeholder="${amul ? 'Efeito mágico do amuleto…' : 'Para que serve / descrição…'}" />
     </div>`;
   }).join('');
 
@@ -1524,12 +1550,27 @@ async function quickLoad() {
 }
 
 /* ---------- 10. PAINEL DO NARRADOR ---------- */
+function setGmMode(on) {
+  isGM = on;
+  if (on) sessionStorage.setItem('sinay-gm-active', '1');
+  else sessionStorage.removeItem('sinay-gm-active');
+  applyGmUi();
+}
+function applyGmUi() {
+  document.body.classList.toggle('is-gm', isGM);
+  const a = $('#addItemBtn'), b = $('#addAmuletoBtn');
+  if (a) a.classList.toggle('hidden-i', !isGM);
+  if (b) b.classList.toggle('hidden-i', !isGM);
+  renderInventory(true);
+}
+
 function tryGmEnter() {
   const pass = $('#gmPass').value;
   if (pass !== GM_PASSWORD) { $('#gmPassErr').classList.remove('hidden-i'); shake($('#gmPass')); return; }
   $('#gmPassErr').classList.add('hidden-i');
   $('#gmPass').value = '';
   $('#gmGate').classList.add('hidden-i');
+  setGmMode(true);   // vira Mestre pela sessão (até fechar a aba)
   openGmHub();
 }
 
@@ -1662,6 +1703,7 @@ function fallbackCopy(text){ const ta=document.createElement('textarea'); ta.val
 async function boot() {
   buildStatics();
   bindEvents();
+  applyGmUi();   // aplica o Modo Mestre salvo na sessão (se houver)
 
   if (CONFIGURED) await initFirebase();
   else startLocal();
