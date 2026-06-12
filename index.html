@@ -520,7 +520,12 @@
       <h3 class="text-xl font-bold text-ink flex items-center gap-2"><i data-lucide="gift" class="w-6 h-6 text-grape"></i> Dar Item / Amuleto</h3>
       <button data-close="giveModal" aria-label="Fechar" class="cartoon-btn bg-rose-300 px-2 py-1"><i data-lucide="x" class="w-4 h-4"></i></button>
     </div>
-    <p id="giveTarget" class="text-sm font-bold text-grape mb-3">Para: —</p>
+    <p id="giveTarget" class="text-sm font-bold text-grape mb-2">Para: —</p>
+
+    <div class="mb-3">
+      <span class="text-xs font-bold text-ink uppercase tracking-wide">Itens prontos (clique para preencher)</span>
+      <div id="presetRow" class="flex gap-2 flex-wrap mt-1"></div>
+    </div>
 
     <div class="flex items-center gap-3 mb-3 flex-wrap">
       <div id="givePhotoPrev" class="w-16 h-16 rounded-xl bg-white overflow-hidden flex items-center justify-center text-3xl" style="border:3px solid var(--ink)">🎒</div>
@@ -1244,6 +1249,7 @@ function bindEvents() {
   $('#giveKindAmuleto').addEventListener('click', () => setGiveKind('amuleto'));
   $('#giveConfirm').addEventListener('click', () => doGive(false));
   $('#giveAll').addEventListener('click', () => doGive(true));
+  renderPresets();
 
   // Share / GM
   $('#shareBtn').addEventListener('click', openShare);
@@ -1389,6 +1395,25 @@ function onItemPhotoFile(e) {
 
 /* ---------- Narrador: criar/distribuir Itens & Amuletos ---------- */
 let giveTargetId = null, giveKind = 'item', givePhoto = '';
+
+/* Itens prontos (catálogo do Mestre) */
+const ITEM_PRESETS = [
+  { kind: 'amuleto', name: '🟢 Gema Verde', desc: '+2 de Poder',     color: 'bg-emerald-200' },
+  { kind: 'amuleto', name: '🩷 Gema Rosa',  desc: '+2 de Agilidade', color: 'bg-rose-200' },
+];
+function renderPresets() {
+  const row = $('#presetRow'); if (!row) return;
+  row.innerHTML = ITEM_PRESETS.map((p, i) =>
+    `<button class="cartoon-btn ${p.color} px-3 py-1.5 text-sm" data-preset="${i}" title="${escapeHtml(p.desc)}">${escapeHtml(p.name)}</button>`).join('');
+  row.querySelectorAll('[data-preset]').forEach(b =>
+    b.addEventListener('click', () => fillGive(ITEM_PRESETS[+b.dataset.preset])));
+}
+function fillGive(p) {
+  givePhoto = '';
+  setGiveKind(p.kind);
+  $('#giveName').value = p.name;
+  $('#giveDesc').value = p.desc;
+}
 
 function openGiveModal(id) {
   const s = gmSheets[id]; if (!s) return;
