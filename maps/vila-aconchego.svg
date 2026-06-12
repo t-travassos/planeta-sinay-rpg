@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<style>@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700');text{font-family:'Fredoka','Baloo 2','Comic Sans MS',sans-serif;font-weight:600;}</style>
+  <title>Mapa: Vila Aconchego — Cidade Pacata</title>
+  <desc>Mapa de RPG cartoon de uma cidadezinha saudável com fazenda, creche, restaurante e praça central; gosma neon começando a invadir pela borda nordeste, em direção a Fabrilândia.</desc>
+  <defs>
+    <radialGradient id="paperGlow" cx="50%" cy="44%" r="78%">
+      <stop offset="0%" stop-color="#fdfaf6"/>
+      <stop offset="62%" stop-color="#f5efe6"/>
+      <stop offset="100%" stop-color="#efe7d8"/>
+    </radialGradient>
+    <radialGradient id="edgePurple" cx="50%" cy="50%" r="62%">
+      <stop offset="0%" stop-color="#6d28d9" stop-opacity="0"/>
+      <stop offset="72%" stop-color="#6d28d9" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#6d28d9" stop-opacity="0.34"/>
+    </radialGradient>
+    <radialGradient id="slimeGrad" cx="50%" cy="36%" r="78%">
+      <stop offset="0%" stop-color="#7CFF4F"/>
+      <stop offset="52%" stop-color="#39ff14"/>
+      <stop offset="100%" stop-color="#4ade80"/>
+    </radialGradient>
+    <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bfe3ff"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+    <clipPath id="paper">
+      <rect x="34" y="34" width="1132" height="732" rx="32"/>
+    </clipPath>
+  </defs>
+
+  <!-- ===== FRAME ===== -->
+  <rect x="0" y="0" width="1200" height="800" fill="#0d061f"/>
+  <rect x="10" y="10" width="1180" height="780" rx="48" fill="#2e1065" stroke="#1e1b4b" stroke-width="6"/>
+  <rect x="20" y="20" width="1160" height="760" rx="42" fill="#4c1d95" stroke="#1e1b4b" stroke-width="4"/>
+  <rect x="34" y="34" width="1132" height="732" rx="32" fill="url(#paperGlow)" stroke="#1e1b4b" stroke-width="5"/>
+  <rect x="34" y="34" width="1132" height="732" rx="32" fill="url(#edgePurple)"/>
+
+  <g clip-path="url(#paper)" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- ===== ROADS ===== -->
+    <path d="M 470,766 C 520,700 558,650 600,608 C 668,556 706,518 738,470 C 764,422 818,398 862,362 C 924,318 984,286 1052,236 C 1100,200 1142,180 1182,150" fill="none" stroke="#1e1b4b" stroke-width="36"/>
+    <path d="M 470,766 C 520,700 558,650 600,608 C 668,556 706,518 738,470 C 764,422 818,398 862,362 C 924,318 984,286 1052,236 C 1100,200 1142,180 1182,150" fill="none" stroke="#efe7d8" stroke-width="26"/>
+    <path d="M 470,766 C 520,700 558,650 600,608 C 668,556 706,518 738,470 C 764,422 818,398 862,362 C 924,318 984,286 1052,236 C 1100,200 1142,180 1182,150" fill="none" stroke="#fbbf24" stroke-width="3" stroke-dasharray="2 17"/>
+    <!-- ruela -->
+    <path d="M 528,468 C 506,498 486,516 466,532" fill="none" stroke="#1e1b4b" stroke-width="18"/>
+    <path d="M 528,468 C 506,498 486,516 466,532" fill="none" stroke="#efe7d8" stroke-width="11"/>
+
+    <!-- decorative grass tufts & flowers -->
+    <g stroke="#1e1b4b" stroke-width="2.5" fill="none">
+      <path d="M 150,470 q 3,-12 6,0 M 158,470 q 3,-12 6,0"/>
+      <path d="M 690,500 q 3,-12 6,0 M 698,500 q 3,-12 6,0"/>
+      <path d="M 410,255 q 3,-12 6,0 M 418,255 q 3,-12 6,0"/>
+    </g>
+    <g>
+      <g transform="translate(480,250)"><circle cx="-7" cy="0" r="5" fill="#fb7185"/><circle cx="7" cy="0" r="5" fill="#fb7185"/><circle cx="0" cy="-7" r="5" fill="#fb7185"/><circle cx="0" cy="7" r="5" fill="#fb7185"/><circle cx="0" cy="0" r="4" fill="#fbbf24"/></g>
+      <g transform="translate(835,500)"><circle cx="-7" cy="0" r="5" fill="#fb7185"/><circle cx="7" cy="0" r="5" fill="#fb7185"/><circle cx="0" cy="-7" r="5" fill="#fb7185"/><circle cx="0" cy="7" r="5" fill="#fb7185"/><circle cx="0" cy="0" r="4" fill="#fbbf24"/></g>
+      <g transform="translate(160,690)"><circle cx="-7" cy="0" r="5" fill="#fb7185"/><circle cx="7" cy="0" r="5" fill="#fb7185"/><circle cx="0" cy="-7" r="5" fill="#fb7185"/><circle cx="0" cy="7" r="5" fill="#fb7185"/><circle cx="0" cy="0" r="4" fill="#fbbf24"/></g>
+    </g>
+    <!-- birds -->
+    <g stroke="#1e1b4b" stroke-width="3" fill="none">
+      <path d="M 540,176 q 8,-8 16,0 q 8,-8 16,0"/>
+      <path d="M 612,160 q 7,-7 14,0 q 7,-7 14,0"/>
+    </g>
+
+    <!-- standalone trees near top/center -->
+    <g stroke="#1e1b4b" stroke-width="4">
+      <g transform="translate(516,250)"><rect x="-5" y="6" width="10" height="20" rx="3" fill="#efe7d8"/><circle cx="0" cy="-4" r="22" fill="#4ade80"/><circle cx="-8" cy="-2" r="4" fill="#fb7185" stroke="none"/><circle cx="7" cy="-8" r="4" fill="#fb7185" stroke="none"/></g>
+      <g transform="translate(692,250)"><rect x="-5" y="6" width="10" height="20" rx="3" fill="#efe7d8"/><circle cx="0" cy="-4" r="22" fill="#4ade80"/><circle cx="8" cy="-2" r="4" fill="#fb7185" stroke="none"/><circle cx="-7" cy="-8" r="4" fill="#fb7185" stroke="none"/></g>
+      <g transform="translate(818,262)"><rect x="-5" y="6" width="10" height="20" rx="3" fill="#efe7d8"/><circle cx="0" cy="-4" r="20" fill="#4ade80"/><circle cx="7" cy="-6" r="4" fill="#fb7185" stroke="none"/></g>
+    </g>
+
+    <!-- ===== PRAÇA CENTRAL ===== -->
+    <g stroke="#1e1b4b">
+      <circle cx="600" cy="395" r="111" fill="#1e1b4b"/>
+      <circle cx="600" cy="389" r="111" fill="#efe7d8" stroke-width="5"/>
+      <circle cx="600" cy="389" r="94" fill="none" stroke="#a78bfa" stroke-width="5" stroke-dasharray="4 15"/>
+      <!-- trees in plaza -->
+      <g stroke-width="4">
+        <g transform="translate(546,440)"><rect x="-4" y="5" width="8" height="16" rx="3" fill="#efe7d8"/><circle cx="0" cy="-3" r="18" fill="#4ade80"/></g>
+        <g transform="translate(658,345)"><rect x="-4" y="5" width="8" height="16" rx="3" fill="#efe7d8"/><circle cx="0" cy="-3" r="18" fill="#4ade80"/></g>
+      </g>
+      <!-- bench -->
+      <g stroke-width="3"><rect x="572" y="458" width="56" height="11" rx="4" fill="#a78bfa"/><rect x="576" y="468" width="6" height="9" fill="#a78bfa"/><rect x="618" y="468" width="6" height="9" fill="#a78bfa"/></g>
+      <!-- lamp -->
+      <g stroke-width="4"><line x1="665" y1="448" x2="665" y2="412"/><circle cx="665" cy="406" r="8" fill="#fbbf24"/></g>
+      <!-- fountain -->
+      <circle cx="600" cy="389" r="48" fill="#a78bfa" stroke-width="5"/>
+      <circle cx="600" cy="389" r="36" fill="url(#waterGrad)" stroke-width="3"/>
+      <circle cx="600" cy="389" r="12" fill="#a78bfa" stroke-width="3"/>
+      <ellipse cx="600" cy="372" rx="18" ry="7" fill="#bfe3ff" stroke-width="3"/>
+      <g fill="#bfe3ff" stroke-width="2"><ellipse cx="582" cy="362" rx="4" ry="7"/><ellipse cx="618" cy="362" rx="4" ry="7"/><ellipse cx="600" cy="356" rx="4" ry="7"/></g>
+    </g>
+
+    <!-- ===== HOUSES ===== -->
+    <!-- House NW -->
+    <g stroke="#1e1b4b" stroke-width="5">
+      <rect x="402" y="304" width="80" height="64" rx="6" fill="#a78bfa"/>
+      <polygon points="390,306 442,264 494,306" fill="#ef4444"/>
+      <rect x="430" y="336" width="26" height="32" rx="3" fill="#fbbf24"/>
+      <rect x="410" y="320" width="18" height="18" rx="3" fill="#bfe3ff"/>
+    </g>
+    <!-- House NE -->
+    <g stroke="#1e1b4b" stroke-width="5">
+      <rect x="706" y="304" width="80" height="64" rx="6" fill="#fdfaf6"/>
+      <polygon points="694,306 746,264 798,306" fill="#fb7185"/>
+      <rect x="734" y="336" width="26" height="32" rx="3" fill="#6d28d9"/>
+      <rect x="714" y="320" width="18" height="18" rx="3" fill="#bfe3ff"/>
+    </g>
+    <!-- House SW (by ruela) -->
+    <g stroke="#1e1b4b" stroke-width="5">
+      <rect x="416" y="548" width="78" height="62" rx="6" fill="#fbbf24"/>
+      <polygon points="404,550 455,510 506,550" fill="#7c3aed"/>
+      <rect x="443" y="578" width="26" height="32" rx="3" fill="#fdfaf6"/>
+      <rect x="424" y="564" width="18" height="18" rx="3" fill="#bfe3ff"/>
+    </g>
+
+    <!-- ===== FARM ===== -->
+    <g stroke="#1e1b4b">
+      <!-- paddock fence + animals (left of barn) -->
+      <g stroke-width="4" fill="#fdfaf6">
+        <rect x="120" y="356" width="7" height="40" rx="2"/>
+        <rect x="150" y="356" width="7" height="40" rx="2"/>
+        <rect x="180" y="356" width="7" height="40" rx="2"/>
+        <line x1="116" y1="366" x2="190" y2="366"/>
+        <line x1="116" y1="384" x2="190" y2="384"/>
+      </g>
+      <!-- sheep -->
+      <g stroke-width="3">
+        <ellipse cx="150" cy="378" rx="18" ry="13" fill="#fdfaf6"/>
+        <ellipse cx="166" cy="377" rx="8" ry="7" fill="#1e1b4b"/>
+        <line x1="142" y1="389" x2="142" y2="396"/><line x1="158" y1="389" x2="158" y2="396"/>
+      </g>
+      <!-- chicken -->
+      <g stroke-width="3">
+        <ellipse cx="135" cy="338" rx="11" ry="9" fill="#fdfaf6"/>
+        <circle cx="126" cy="332" r="6" fill="#fdfaf6"/>
+        <path d="M 126,326 q 3,-6 6,0" fill="#fb7185"/>
+        <polygon points="120,332 126,330 120,335" fill="#fbbf24"/>
+      </g>
+      <!-- fields -->
+      <rect x="176" y="392" width="196" height="56" rx="12" fill="#efe7d8" stroke-width="5"/>
+      <g stroke="none">
+        <rect x="186" y="400" width="13" height="40" rx="5" fill="#4ade80"/>
+        <rect x="208" y="400" width="13" height="40" rx="5" fill="#4ade80"/>
+        <rect x="230" y="400" width="13" height="40" rx="5" fill="#4ade80"/>
+        <rect x="252" y="400" width="13" height="40" rx="5" fill="#4ade80"/>
+      </g>
+      <rect x="284" y="400" width="78" height="40" rx="7" fill="#fbbf24" stroke="#1e1b4b" stroke-width="3"/>
+      <g stroke="#1e1b4b" stroke-width="2"><line x1="296" y1="404" x2="296" y2="436"/><line x1="312" y1="404" x2="312" y2="436"/><line x1="328" y1="404" x2="328" y2="436"/><line x1="344" y1="404" x2="344" y2="436"/></g>
+      <!-- silo -->
+      <rect x="324" y="302" width="40" height="72" rx="10" fill="#efe7d8" stroke-width="5"/>
+      <path d="M 322,304 C 324,278 364,278 366,304 Z" fill="#a78bfa" stroke-width="5"/>
+      <line x1="324" y1="324" x2="364" y2="324" stroke="#1e1b4b" stroke-width="2"/>
+      <line x1="324" y1="346" x2="364" y2="346" stroke="#1e1b4b" stroke-width="2"/>
+      <!-- barn shadow -->
+      <polygon points="196,302 262,256 328,302" fill="#1e1b4b"/>
+      <rect x="206" y="302" width="112" height="76" rx="4" fill="#1e1b4b"/>
+      <!-- barn -->
+      <polygon points="190,296 256,250 322,296" fill="#ef4444" stroke-width="5"/>
+      <rect x="200" y="296" width="112" height="76" rx="4" fill="#ef4444" stroke-width="5"/>
+      <circle cx="256" cy="284" r="9" fill="#fbbf24" stroke-width="3"/>
+      <rect x="234" y="332" width="44" height="40" rx="3" fill="#fdfaf6" stroke-width="4"/>
+      <line x1="234" y1="332" x2="278" y2="372" stroke="#1e1b4b" stroke-width="3"/>
+      <line x1="278" y1="332" x2="234" y2="372" stroke="#1e1b4b" stroke-width="3"/>
+      <rect x="210" y="312" width="18" height="18" rx="2" fill="#fbbf24" stroke-width="3"/>
+    </g>
+
+    <!-- ===== CRECHE ===== -->
+    <g stroke="#1e1b4b">
+      <!-- slide -->
+      <g stroke-width="4">
+        <line x1="288" y1="558" x2="288" y2="624"/>
+        <line x1="298" y1="558" x2="298" y2="624"/>
+        <line x1="288" y1="572" x2="298" y2="572"/><line x1="288" y1="588" x2="298" y2="588"/><line x1="288" y1="604" x2="298" y2="604"/>
+        <path d="M 296,556 L 312,556 C 360,572 366,610 364,628 L 348,628 C 348,608 330,580 296,572 Z" fill="#fb7185"/>
+      </g>
+      <!-- swing -->
+      <g stroke="#7c3aed" stroke-width="5" fill="none">
+        <line x1="306" y1="700" x2="334" y2="632"/>
+        <line x1="362" y1="700" x2="334" y2="632"/>
+        <line x1="312" y1="650" x2="356" y2="650"/>
+      </g>
+      <g stroke="#1e1b4b" stroke-width="3"><line x1="338" y1="650" x2="338" y2="684"/><rect x="330" y="684" width="18" height="7" rx="2" fill="#fbbf24"/></g>
+      <!-- creche house shadow -->
+      <rect x="156" y="566" width="104" height="78" rx="8" fill="#1e1b4b"/>
+      <!-- creche house -->
+      <rect x="150" y="560" width="104" height="78" rx="8" fill="#38bdf8" stroke-width="5"/>
+      <polygon points="138,562 202,514 266,562" fill="#ef4444" stroke-width="5"/>
+      <rect x="186" y="602" width="34" height="36" rx="4" fill="#fbbf24" stroke-width="4"/>
+      <circle cx="172" cy="586" r="12" fill="#bfe3ff" stroke-width="3"/>
+      <g transform="translate(232,586)" stroke-width="3"><path d="M 0,3 C -8,-7 -16,3 0,13 C 16,3 8,-7 0,3 Z" fill="#fb7185"/></g>
+      <!-- toy balls -->
+      <circle cx="190" cy="690" r="12" fill="#fbbf24" stroke-width="3"/>
+      <circle cx="166" cy="700" r="10" fill="#fb7185" stroke-width="3"/>
+      <circle cx="222" cy="700" r="9" fill="#7c3aed" stroke-width="3"/>
+    </g>
+
+    <!-- ===== RESTAURANTE ===== -->
+    <g stroke="#1e1b4b">
+      <!-- hanging sign -->
+      <g stroke-width="4">
+        <line x1="744" y1="556" x2="744" y2="612"/>
+        <line x1="700" y1="556" x2="744" y2="556"/>
+        <rect x="700" y="560" width="74" height="44" rx="8" fill="#fbbf24"/>
+      </g>
+      <g transform="translate(737,582)" stroke-width="2.5">
+        <path d="M -16,2 C -20,-10 -8,-14 -2,-9 C 4,-15 16,-10 12,2 Z" fill="#fdfaf6"/>
+        <rect x="-16" y="2" width="28" height="7" rx="2" fill="#fdfaf6"/>
+        <line x1="2" y1="-1" x2="2" y2="5" stroke="#1e1b4b"/>
+      </g>
+      <!-- building shadow -->
+      <rect x="566" y="590" width="150" height="80" rx="8" fill="#1e1b4b"/>
+      <!-- building -->
+      <polygon points="548,588 632,544 716,588" fill="#ef4444" stroke-width="5"/>
+      <rect x="560" y="584" width="150" height="82" rx="8" fill="#fdfaf6" stroke-width="5"/>
+      <!-- awning stripes -->
+      <g stroke-width="3">
+        <rect x="560" y="624" width="25" height="22" fill="#fb7185"/>
+        <rect x="585" y="624" width="25" height="22" fill="#fdfaf6"/>
+        <rect x="610" y="624" width="25" height="22" fill="#fb7185"/>
+        <rect x="635" y="624" width="25" height="22" fill="#fdfaf6"/>
+        <rect x="660" y="624" width="25" height="22" fill="#fb7185"/>
+        <rect x="685" y="624" width="25" height="22" fill="#fdfaf6"/>
+      </g>
+      <rect x="616" y="640" width="38" height="26" rx="3" fill="#6d28d9" stroke-width="4"/>
+      <circle cx="648" cy="654" r="3" fill="#fbbf24" stroke="none"/>
+      <rect x="575" y="600" width="22" height="18" rx="3" fill="#bfe3ff" stroke-width="3"/>
+      <rect x="673" y="600" width="22" height="18" rx="3" fill="#bfe3ff" stroke-width="3"/>
+      <!-- tables out front -->
+      <g stroke-width="3">
+        <line x1="588" y1="686" x2="588" y2="708"/>
+        <polygon points="566,672 610,672 588,652" fill="#fb7185" stroke-width="4"/>
+        <ellipse cx="588" cy="700" rx="22" ry="9" fill="#a78bfa"/>
+      </g>
+      <g stroke-width="3">
+        <line x1="690" y1="690" x2="690" y2="710"/>
+        <polygon points="670,678 710,678 690,660" fill="#fb7185" stroke-width="4"/>
+        <ellipse cx="690" cy="704" rx="20" ry="8" fill="#a78bfa"/>
+      </g>
+    </g>
+
+    <!-- ===== GOSMA (NE invasion toward Fabrilândia) ===== -->
+    <g stroke-linejoin="round">
+      <!-- far thin tendril (lightest) -->
+      <path d="M 845,318 C 818,315 808,338 825,350 C 818,368 842,378 856,362 C 875,365 882,342 862,330 C 866,318 852,314 845,318 Z" fill="url(#slimeGrad)" fill-opacity="0.38" stroke="#166534" stroke-width="4"/>
+      <!-- mid blob (translucent) -->
+      <path d="M 905,278 C 868,272 848,300 870,322 C 856,346 884,362 906,346 C 936,354 952,322 930,300 C 940,282 922,270 905,278 Z" fill="url(#slimeGrad)" fill-opacity="0.55" stroke="#166534" stroke-width="4.5"/>
+      <circle cx="884" cy="312" r="6" fill="#7CFF4F" fill-opacity="0.7" stroke="none"/>
+      <!-- main blob (opaque, epicenter corner) -->
+      <path d="M 1184,38 C 1118,28 1030,54 1010,120 C 978,128 950,160 968,196 C 926,206 910,252 950,272 C 1000,296 1058,278 1078,238 C 1122,262 1182,250 1186,205 Z" fill="url(#slimeGrad)" fill-opacity="0.95" stroke="#166534" stroke-width="6"/>
+      <!-- bubbles + specks on main -->
+      <circle cx="1086" cy="116" r="11" fill="#7CFF4F" stroke="none"/>
+      <circle cx="1034" cy="166" r="8" fill="#7CFF4F" stroke="none"/>
+      <circle cx="1128" cy="178" r="9" fill="#7CFF4F" stroke="none"/>
+      <circle cx="1052" cy="150" r="5" fill="#0d2417" stroke="none"/>
+      <circle cx="992" cy="206" r="5" fill="#0d2417" stroke="none"/>
+      <circle cx="1098" cy="210" r="4" fill="#0d2417" stroke="none"/>
+      <!-- drips -->
+      <g stroke="#166534" stroke-width="3.5">
+        <path d="M 962,272 C 958,288 952,296 958,306 C 966,312 972,304 968,292 C 966,284 968,278 962,272 Z" fill="url(#slimeGrad)" fill-opacity="0.9"/>
+        <circle cx="1008" cy="300" r="6" fill="#39ff14" fill-opacity="0.85"/>
+        <circle cx="1056" cy="284" r="7" fill="#39ff14" fill-opacity="0.85"/>
+        <circle cx="918" cy="338" r="5" fill="#4ade80" fill-opacity="0.6"/>
+      </g>
+    </g>
+
+    <!-- ===== Fabrilândia signpost ===== -->
+    <g stroke="#1e1b4b">
+      <line x1="1002" y1="356" x2="1002" y2="436" stroke="#6d28d9" stroke-width="7"/>
+      <rect x="940" y="356" width="130" height="36" rx="8" fill="#efe7d8" stroke-width="4"/>
+      <circle cx="956" cy="362" r="5" fill="#39ff14" stroke="#166534" stroke-width="2"/>
+      <text x="1008" y="380" font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="700" font-size="15" text-anchor="middle" fill="#1e1b4b">Fabrilândia →</text>
+    </g>
+
+    <!-- ===== LOCATION LABELS ===== -->
+    <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="700" font-size="16" text-anchor="middle" fill="#1e1b4b">
+      <g><rect x="194" y="458" width="112" height="28" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/><text x="250" y="478">Fazenda</text></g>
+      <g><rect x="178" y="700" width="104" height="28" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/><text x="230" y="720">Creche</text></g>
+      <g><rect x="586" y="700" width="148" height="28" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/><text x="660" y="720">Restaurante</text></g>
+      <g><rect x="554" y="520" width="92" height="28" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/><text x="600" y="540">Praça</text></g>
+    </g>
+
+    <!-- ===== COMPASS ===== -->
+    <g stroke="#1e1b4b">
+      <circle cx="138" cy="190" r="46" fill="#1e1b4b"/>
+      <circle cx="132" cy="186" r="46" fill="#fdfaf6" stroke-width="5"/>
+      <circle cx="132" cy="186" r="36" fill="none" stroke="#a78bfa" stroke-width="3" stroke-dasharray="3 9"/>
+      <polygon points="132,160 143,175 158,186 143,197 132,212 121,197 106,186 121,175" fill="#a78bfa" stroke-width="2"/>
+      <polygon points="132,160 138,183 132,186 126,183" fill="#7c3aed" stroke-width="2"/>
+      <polygon points="158,186 135,192 132,186 135,180" fill="#7c3aed" stroke-width="2"/>
+      <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="700" font-size="15" text-anchor="middle" fill="#1e1b4b" stroke="none">
+        <text x="132" y="156">N</text>
+        <text x="132" y="228">S</text>
+        <text x="166" y="191">L</text>
+        <text x="100" y="191">O</text>
+      </g>
+    </g>
+
+    <!-- ===== LEGEND ===== -->
+    <g stroke-linejoin="round">
+      <rect x="858" y="452" width="290" height="300" rx="18" fill="#1e1b4b"/>
+      <rect x="852" y="448" width="290" height="300" rx="18" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="5"/>
+      <text x="997" y="482" font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="700" font-size="21" text-anchor="middle" fill="#1e1b4b" style="paint-order:stroke" stroke="#fdfaf6" stroke-width="1">Legenda</text>
+      <line x1="872" y1="492" x2="1122" y2="492" stroke="#a78bfa" stroke-width="3"/>
+
+      <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="600" font-size="15" fill="#1e1b4b">
+        <!-- Fazenda -->
+        <g stroke="#1e1b4b" stroke-width="2.5"><polygon points="876,512 888,503 900,512" fill="#ef4444"/><rect x="878" y="512" width="20" height="13" fill="#ef4444"/></g>
+        <text x="912" y="521">Fazenda</text>
+        <!-- Creche -->
+        <g stroke="#1e1b4b" stroke-width="2.5"><polygon points="876,535 888,526 900,535" fill="#ef4444"/><rect x="878" y="535" width="20" height="13" fill="#38bdf8"/></g>
+        <text x="912" y="544">Creche</text>
+        <!-- Restaurante -->
+        <g stroke="#1e1b4b" stroke-width="2"><path d="M 877,556 C 874,548 882,546 888,549 C 894,546 902,548 899,556 Z" fill="#fdfaf6"/><rect x="877" y="556" width="22" height="6" fill="#fdfaf6"/></g>
+        <text x="912" y="567">Restaurante</text>
+        <!-- Praça -->
+        <g stroke="#1e1b4b" stroke-width="2.5"><circle cx="888" cy="582" r="9" fill="#a78bfa"/><circle cx="888" cy="582" r="4" fill="#bfe3ff"/></g>
+        <text x="912" y="588">Praça (fonte)</text>
+        <!-- Casa -->
+        <g stroke="#1e1b4b" stroke-width="2.5"><polygon points="877,604 888,595 899,604" fill="#fb7185"/><rect x="879" y="604" width="18" height="12" fill="#a78bfa"/></g>
+        <text x="912" y="611">Casa</text>
+        <!-- Estrada -->
+        <g><rect x="876" y="621" width="24" height="12" rx="4" fill="#efe7d8" stroke="#1e1b4b" stroke-width="3"/><line x1="879" y1="627" x2="897" y2="627" stroke="#fbbf24" stroke-width="2" stroke-dasharray="2 4"/></g>
+        <text x="912" y="634">Estrada</text>
+      </g>
+
+      <line x1="872" y1="648" x2="1122" y2="648" stroke="#a78bfa" stroke-width="3"/>
+      <text x="876" y="668" font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="700" font-size="15" fill="#166534">Gosma chegando:</text>
+
+      <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="600" font-size="15" fill="#1e1b4b">
+        <!-- Leve -->
+        <path d="M 880,688 C 872,684 872,696 880,696 C 884,700 894,696 890,690 C 894,684 884,684 880,688 Z" fill="url(#slimeGrad)" fill-opacity="0.35" stroke="#166534" stroke-width="2.5"/>
+        <text x="912" y="694">Leve</text>
+        <!-- Médio -->
+        <path d="M 880,710 C 871,706 871,719 881,719 C 885,723 896,718 891,711 C 896,704 884,704 880,710 Z" fill="url(#slimeGrad)" fill-opacity="0.6" stroke="#166534" stroke-width="2.5"/>
+        <text x="912" y="717">Médio</text>
+        <!-- Tomado -->
+        <path d="M 880,732 C 870,728 870,742 881,742 C 886,747 897,741 892,733 C 897,725 884,725 880,732 Z" fill="url(#slimeGrad)" fill-opacity="0.97" stroke="#166534" stroke-width="2.5"/>
+        <circle cx="884" cy="734" r="2.5" fill="#0d2417" stroke="none"/>
+        <text x="912" y="740">Tomado</text>
+      </g>
+    </g>
+
+  </g>
+
+  <!-- ===== TITLE BANNER ===== -->
+  <g>
+    <polygon points="318,82 296,58 318,34" fill="#fb7185" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>
+    <polygon points="882,82 904,58 882,34" fill="#fb7185" stroke="#1e1b4b" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="316" y="30" width="568" height="58" rx="16" fill="#7c3aed" stroke="#1e1b4b" stroke-width="5"/>
+    <rect x="326" y="38" width="548" height="42" rx="11" fill="none" stroke="#a78bfa" stroke-width="2.5"/>
+    <text x="600" y="68" font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="700" font-size="29" text-anchor="middle" fill="#fdfaf6" style="paint-order:stroke" stroke="#1e1b4b" stroke-width="2">Vila Aconchego — Cidade Pacata</text>
+  </g>
+</svg>

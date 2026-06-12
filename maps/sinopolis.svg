@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+<style>@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700');text{font-family:'Fredoka','Baloo 2','Comic Sans MS',sans-serif;font-weight:600;}</style>
+<defs>
+<radialGradient id="vign" cx="50%" cy="50%" r="75%">
+<stop offset="58%" stop-color="#4c1d95" stop-opacity="0"/>
+<stop offset="100%" stop-color="#4c1d95" stop-opacity="0.40"/>
+</radialGradient>
+<radialGradient id="water" cx="42%" cy="35%" r="72%">
+<stop offset="0%" stop-color="#bfe3ff"/>
+<stop offset="100%" stop-color="#38bdf8"/>
+</radialGradient>
+<linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0%" stop-color="#bfe3ff"/>
+<stop offset="100%" stop-color="#38bdf8"/>
+</linearGradient>
+<radialGradient id="slimeR" cx="58%" cy="38%" r="78%">
+<stop offset="0%" stop-color="#7CFF4F"/>
+<stop offset="100%" stop-color="#39ff14"/>
+</radialGradient>
+</defs>
+
+<!-- space backdrop -->
+<rect x="0" y="0" width="1200" height="800" fill="#0d061f"/>
+<!-- cartoon frame -->
+<rect x="10" y="10" width="1180" height="780" rx="46" ry="46" fill="#4c1d95" stroke="#1e1b4b" stroke-width="7"/>
+<rect x="22" y="22" width="1156" height="756" rx="38" ry="38" fill="#2e1065" stroke="#6d28d9" stroke-width="3"/>
+<rect x="30" y="30" width="1140" height="740" rx="30" ry="30" fill="#f5efe6" stroke="#1e1b4b" stroke-width="5"/>
+<rect x="30" y="30" width="1140" height="740" rx="30" ry="30" fill="url(#vign)"/>
+<!-- little stars on the frame -->
+<g fill="#fbbf24" stroke="#1e1b4b" stroke-width="1">
+<polygon points="20,210 23,219 32,220 24,226 27,235 20,229 13,235 16,226 8,220 17,219"/>
+<polygon points="20,560 23,569 32,570 24,576 27,585 20,579 13,585 16,576 8,570 17,569"/>
+<polygon points="1180,250 1183,259 1192,260 1184,266 1187,275 1180,269 1173,275 1176,266 1168,260 1177,259"/>
+<polygon points="1180,540 1183,549 1192,550 1184,556 1187,565 1180,559 1173,565 1176,556 1168,550 1177,549"/>
+</g>
+<g fill="#a78bfa">
+<circle cx="20" cy="380" r="3"/><circle cx="1180" cy="400" r="3"/>
+<circle cx="350" cy="20" r="3"/><circle cx="860" cy="20" r="3"/>
+<circle cx="420" cy="782" r="3"/><circle cx="780" cy="782" r="3"/>
+</g>
+
+<g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif">
+
+<!-- ============ ROADS (sidewalk under asphalt) ============ -->
+<g>
+<!-- sidewalks -->
+<rect x="89" y="152" width="1007" height="52" rx="10" fill="#efe7d8"/>
+<rect x="49" y="347" width="1091" height="56" rx="12" fill="#efe7d8"/>
+<rect x="314" y="100" width="52" height="515" fill="#efe7d8"/>
+<rect x="694" y="100" width="52" height="515" fill="#efe7d8"/>
+<!-- asphalt -->
+<rect x="95" y="158" width="995" height="40" rx="6" fill="#a78bfa"/>
+<rect x="55" y="353" width="1085" height="44" rx="8" fill="#a78bfa"/>
+<rect x="320" y="100" width="40" height="515" fill="#a78bfa"/>
+<rect x="700" y="100" width="40" height="515" fill="#a78bfa"/>
+</g>
+<!-- lane dashes -->
+<g stroke="#fdfaf6" stroke-width="5" stroke-linecap="round" stroke-dasharray="20 16" fill="none">
+<line x1="112" y1="178" x2="1072" y2="178"/>
+<line x1="72" y1="375" x2="1122" y2="375"/>
+<line x1="340" y1="118" x2="340" y2="600"/>
+<line x1="720" y1="118" x2="720" y2="600"/>
+</g>
+<!-- crosswalks -->
+<g fill="#fdfaf6">
+<rect x="498" y="355" width="7" height="40"/><rect x="513" y="355" width="7" height="40"/><rect x="528" y="355" width="7" height="40"/><rect x="543" y="355" width="7" height="40"/><rect x="558" y="355" width="7" height="40"/>
+<rect x="848" y="355" width="7" height="40"/><rect x="863" y="355" width="7" height="40"/><rect x="878" y="355" width="7" height="40"/><rect x="893" y="355" width="7" height="40"/>
+<rect x="596" y="160" width="7" height="36"/><rect x="611" y="160" width="7" height="36"/><rect x="626" y="160" width="7" height="36"/><rect x="641" y="160" width="7" height="36"/>
+</g>
+
+<!-- ============ PRAÇA CENTRAL ============ -->
+<g>
+<rect x="379" y="213" width="316" height="138" rx="14" fill="#1e1b4b"/>
+<rect x="372" y="206" width="316" height="138" rx="14" fill="#efe7d8" stroke="#1e1b4b" stroke-width="5"/>
+<rect x="518" y="206" width="26" height="138" fill="#fdfaf6"/>
+<rect x="372" y="262" width="316" height="26" fill="#fdfaf6"/>
+<!-- fountain -->
+<circle cx="531" cy="275" r="37" fill="#efe7d8" stroke="#1e1b4b" stroke-width="5"/>
+<circle cx="531" cy="275" r="29" fill="url(#water)" stroke="#1e1b4b" stroke-width="3"/>
+<circle cx="531" cy="275" r="13" fill="#bfe3ff" stroke="#1e1b4b" stroke-width="2"/>
+<circle cx="531" cy="252" r="4" fill="#bfe3ff"/><circle cx="522" cy="246" r="3" fill="#bfe3ff"/><circle cx="540" cy="246" r="3" fill="#bfe3ff"/>
+<!-- benches -->
+<g fill="#fbbf24" stroke="#1e1b4b" stroke-width="2">
+<rect x="420" y="300" width="36" height="9" rx="2"/><rect x="606" y="236" width="36" height="9" rx="2"/><rect x="440" y="232" width="30" height="9" rx="2"/>
+</g>
+<!-- planters with flowers -->
+<g>
+<rect x="392" y="312" width="26" height="22" rx="4" fill="#7c3aed" stroke="#1e1b4b" stroke-width="2"/>
+<circle cx="399" cy="312" r="4" fill="#fb7185"/><circle cx="410" cy="312" r="4" fill="#fbbf24"/>
+<rect x="648" y="312" width="26" height="22" rx="4" fill="#7c3aed" stroke="#1e1b4b" stroke-width="2"/>
+<circle cx="655" cy="312" r="4" fill="#fbbf24"/><circle cx="666" cy="312" r="4" fill="#fb7185"/>
+</g>
+</g>
+
+<!-- ============ R1-C1 : Café + small building ============ -->
+<g>
+<!-- small blue building -->
+<rect x="229" y="243" width="84" height="108" rx="8" fill="#1e1b4b"/>
+<rect x="222" y="236" width="84" height="108" rx="8" fill="#38bdf8" stroke="#1e1b4b" stroke-width="5"/>
+<g fill="#fbbf24" stroke="#1e1b4b" stroke-width="2">
+<rect x="234" y="252" width="20" height="22" rx="3"/><rect x="272" y="252" width="20" height="22" rx="3"/>
+<rect x="234" y="288" width="20" height="22" rx="3"/><rect x="272" y="288" width="20" height="22" rx="3"/>
+</g>
+<rect x="252" y="320" width="24" height="24" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<!-- café -->
+<rect x="103" y="293" width="104" height="58" rx="8" fill="#1e1b4b"/>
+<rect x="96" y="286" width="104" height="58" rx="8" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="5"/>
+<rect x="108" y="302" width="44" height="28" rx="4" fill="url(#glass)" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="160" y="302" width="30" height="42" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="90" y="270" width="116" height="18" rx="5" fill="#fb7185" stroke="#1e1b4b" stroke-width="3"/>
+<g fill="#fdfaf6"><rect x="112" y="270" width="7" height="18"/><rect x="142" y="270" width="7" height="18"/><rect x="172" y="270" width="7" height="18"/></g>
+<text x="148" y="284" text-anchor="middle" font-size="14" font-weight="700" fill="#fdfaf6" style="paint-order:stroke" stroke="#1e1b4b" stroke-width="2">Café</text>
+</g>
+
+<!-- ============ BANCO (R1-C3) ============ -->
+<g>
+<rect x="759" y="227" width="196" height="128" rx="8" fill="#1e1b4b"/>
+<polygon points="756,256 944,256 850,220" fill="#fbbf24" stroke="#1e1b4b" stroke-width="5"/>
+<circle cx="850" cy="241" r="11" fill="#fbbf24" stroke="#1e1b4b" stroke-width="3"/>
+<text x="850" y="247" text-anchor="middle" font-size="15" font-weight="700" fill="#1e1b4b">$</text>
+<rect x="764" y="257" width="184" height="24" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/>
+<text x="856" y="274" text-anchor="middle" font-size="15" font-weight="700" fill="#1e1b4b" letter-spacing="2">BANCO</text>
+<rect x="766" y="281" width="180" height="58" fill="#efe7d8" stroke="#1e1b4b" stroke-width="4"/>
+<g fill="#fdfaf6" stroke="#1e1b4b" stroke-width="2">
+<rect x="776" y="285" width="14" height="50"/><rect x="818" y="285" width="14" height="50"/><rect x="880" y="285" width="14" height="50"/><rect x="922" y="285" width="14" height="50"/>
+</g>
+<rect x="845" y="300" width="22" height="35" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="758" y="333" width="196" height="12" rx="3" fill="#efe7d8" stroke="#1e1b4b" stroke-width="3"/>
+</g>
+
+<!-- contaminating building R1-C3 right -->
+<g>
+<rect x="969" y="257" width="128" height="90" rx="8" fill="#1e1b4b"/>
+<rect x="962" y="250" width="128" height="90" rx="8" fill="#7c3aed" stroke="#1e1b4b" stroke-width="5"/>
+<g stroke="#1e1b4b" stroke-width="2">
+<rect x="978" y="266" width="22" height="22" rx="3" fill="#38bdf8"/><rect x="1014" y="266" width="22" height="22" rx="3" fill="#0d2417"/><rect x="1050" y="266" width="22" height="22" rx="3" fill="#38bdf8"/>
+<rect x="978" y="300" width="22" height="22" rx="3" fill="#0d2417"/><rect x="1050" y="300" width="22" height="22" rx="3" fill="#0d2417"/>
+</g>
+</g>
+
+<!-- ============ SHOPPING (R2-C1) ============ -->
+<g>
+<rect x="77" y="417" width="242" height="202" rx="18" fill="#1e1b4b"/>
+<rect x="70" y="410" width="242" height="202" rx="18" fill="#a78bfa" stroke="#1e1b4b" stroke-width="5"/>
+<rect x="110" y="424" width="162" height="34" rx="10" fill="#fb7185" stroke="#1e1b4b" stroke-width="4"/>
+<text x="191" y="448" text-anchor="middle" font-size="21" font-weight="700" fill="#fdfaf6" style="paint-order:stroke" stroke="#1e1b4b" stroke-width="2">SHOPPING</text>
+<rect x="86" y="470" width="210" height="100" rx="10" fill="url(#glass)" stroke="#1e1b4b" stroke-width="3"/>
+<g stroke="#1e1b4b" stroke-width="2" opacity="0.6">
+<line x1="156" y1="470" x2="156" y2="570"/><line x1="226" y1="470" x2="226" y2="570"/>
+<line x1="86" y1="504" x2="296" y2="504"/><line x1="86" y1="538" x2="296" y2="538"/>
+</g>
+<rect x="150" y="566" width="82" height="46" rx="6" fill="#fbbf24" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="162" y="576" width="26" height="36" fill="#2e1065"/><rect x="194" y="576" width="26" height="36" fill="#2e1065"/>
+<rect x="184" y="388" width="14" height="24" fill="#6d28d9" stroke="#1e1b4b" stroke-width="3"/>
+</g>
+
+<!-- ============ TOWERS (R2-C2 clean downtown) ============ -->
+<g>
+<!-- A -->
+<rect x="387" y="453" width="92" height="166" rx="10" fill="#1e1b4b"/>
+<rect x="380" y="446" width="92" height="166" rx="10" fill="#38bdf8" stroke="#1e1b4b" stroke-width="5"/>
+<rect x="402" y="434" width="44" height="14" rx="3" fill="#6d28d9" stroke="#1e1b4b" stroke-width="3"/>
+<g fill="#fbbf24" stroke="#1e1b4b" stroke-width="2">
+<rect x="394" y="462" width="16" height="20" rx="2"/><rect x="420" y="462" width="16" height="20" rx="2"/><rect x="446" y="462" width="16" height="20" rx="2"/>
+<rect x="394" y="494" width="16" height="20" rx="2"/><rect x="420" y="494" width="16" height="20" rx="2"/><rect x="446" y="494" width="16" height="20" rx="2"/>
+<rect x="394" y="526" width="16" height="20" rx="2"/><rect x="420" y="526" width="16" height="20" rx="2"/><rect x="446" y="526" width="16" height="20" rx="2"/>
+<rect x="394" y="558" width="16" height="20" rx="2"/><rect x="420" y="558" width="16" height="20" rx="2"/><rect x="446" y="558" width="16" height="20" rx="2"/>
+</g>
+<!-- B -->
+<rect x="495" y="417" width="92" height="202" rx="10" fill="#1e1b4b"/>
+<rect x="488" y="410" width="92" height="202" rx="10" fill="#fb7185" stroke="#1e1b4b" stroke-width="5"/>
+<line x1="534" y1="410" x2="534" y2="386" stroke="#1e1b4b" stroke-width="4"/><circle cx="534" cy="384" r="5" fill="#ef4444" stroke="#1e1b4b" stroke-width="2"/>
+<g fill="#bfe3ff" stroke="#1e1b4b" stroke-width="2">
+<rect x="502" y="426" width="16" height="20" rx="2"/><rect x="528" y="426" width="16" height="20" rx="2"/><rect x="554" y="426" width="16" height="20" rx="2"/>
+<rect x="502" y="458" width="16" height="20" rx="2"/><rect x="528" y="458" width="16" height="20" rx="2"/><rect x="554" y="458" width="16" height="20" rx="2"/>
+<rect x="502" y="490" width="16" height="20" rx="2"/><rect x="528" y="490" width="16" height="20" rx="2"/><rect x="554" y="490" width="16" height="20" rx="2"/>
+<rect x="502" y="522" width="16" height="20" rx="2"/><rect x="528" y="522" width="16" height="20" rx="2"/><rect x="554" y="522" width="16" height="20" rx="2"/>
+<rect x="502" y="554" width="16" height="20" rx="2"/><rect x="528" y="554" width="16" height="20" rx="2"/><rect x="554" y="554" width="16" height="20" rx="2"/>
+</g>
+<!-- C -->
+<rect x="603" y="479" width="90" height="140" rx="10" fill="#1e1b4b"/>
+<rect x="596" y="472" width="90" height="140" rx="10" fill="#fbbf24" stroke="#1e1b4b" stroke-width="5"/>
+<g fill="#bfe3ff" stroke="#1e1b4b" stroke-width="2">
+<rect x="610" y="486" width="16" height="20" rx="2"/><rect x="636" y="486" width="16" height="20" rx="2"/><rect x="662" y="486" width="16" height="20" rx="2"/>
+<rect x="610" y="518" width="16" height="20" rx="2"/><rect x="636" y="518" width="16" height="20" rx="2"/><rect x="662" y="518" width="16" height="20" rx="2"/>
+<rect x="610" y="550" width="16" height="20" rx="2"/><rect x="636" y="550" width="16" height="20" rx="2"/><rect x="662" y="550" width="16" height="20" rx="2"/>
+</g>
+</g>
+
+<!-- ============ TOWERS (R2-C3 contaminated) ============ -->
+<g>
+<rect x="767" y="475" width="96" height="144" rx="10" fill="#1e1b4b"/>
+<rect x="760" y="468" width="96" height="144" rx="10" fill="#7c3aed" stroke="#1e1b4b" stroke-width="5"/>
+<g stroke="#1e1b4b" stroke-width="2">
+<rect x="774" y="482" width="18" height="22" rx="2" fill="#0d2417"/><rect x="808" y="482" width="18" height="22" rx="2" fill="#166534"/><rect x="838" y="482" width="14" height="22" rx="2" fill="#0d2417"/>
+<rect x="774" y="514" width="18" height="22" rx="2" fill="#166534"/><rect x="808" y="514" width="18" height="22" rx="2" fill="#0d2417"/><rect x="838" y="514" width="14" height="22" rx="2" fill="#0d2417"/>
+<rect x="774" y="546" width="18" height="22" rx="2" fill="#0d2417"/><rect x="808" y="546" width="18" height="22" rx="2" fill="#0d2417"/>
+</g>
+<rect x="877" y="447" width="104" height="172" rx="10" fill="#1e1b4b"/>
+<rect x="870" y="440" width="104" height="172" rx="10" fill="#6d28d9" stroke="#1e1b4b" stroke-width="5"/>
+<g stroke="#1e1b4b" stroke-width="2">
+<rect x="884" y="456" width="18" height="22" rx="2" fill="#0d2417"/><rect x="916" y="456" width="18" height="22" rx="2" fill="#166534"/><rect x="948" y="456" width="16" height="22" rx="2" fill="#0d2417"/>
+<rect x="884" y="488" width="18" height="22" rx="2" fill="#166534"/><rect x="916" y="488" width="18" height="22" rx="2" fill="#0d2417"/><rect x="948" y="488" width="16" height="22" rx="2" fill="#39ff14"/>
+<rect x="884" y="520" width="18" height="22" rx="2" fill="#0d2417"/><rect x="916" y="520" width="18" height="22" rx="2" fill="#39ff14"/><rect x="948" y="520" width="16" height="22" rx="2" fill="#0d2417"/>
+<rect x="884" y="552" width="18" height="22" rx="2" fill="#0d2417"/><rect x="916" y="552" width="18" height="22" rx="2" fill="#0d2417"/>
+</g>
+</g>
+
+<!-- ============ SHOPS along Rua Comercial ============ -->
+<g stroke-linejoin="round">
+<!-- shop 1 pink -->
+<rect x="106" y="118" width="112" height="42" rx="6" fill="#1e1b4b"/><rect x="100" y="112" width="112" height="42" rx="6" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="110" y="124" width="60" height="26" rx="4" fill="url(#glass)" stroke="#1e1b4b" stroke-width="2"/><rect x="178" y="122" width="26" height="32" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="98" y="98" width="116" height="18" rx="5" fill="#fb7185" stroke="#1e1b4b" stroke-width="3"/><g fill="#fdfaf6"><rect x="120" y="98" width="6" height="18"/><rect x="150" y="98" width="6" height="18"/><rect x="180" y="98" width="6" height="18"/></g>
+<!-- shop 2 sky -->
+<rect x="244" y="118" width="112" height="42" rx="6" fill="#1e1b4b"/><rect x="238" y="112" width="112" height="42" rx="6" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="248" y="124" width="60" height="26" rx="4" fill="url(#glass)" stroke="#1e1b4b" stroke-width="2"/><rect x="316" y="122" width="26" height="32" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="236" y="98" width="116" height="18" rx="5" fill="#38bdf8" stroke="#1e1b4b" stroke-width="3"/><g fill="#fdfaf6"><rect x="258" y="98" width="6" height="18"/><rect x="288" y="98" width="6" height="18"/><rect x="318" y="98" width="6" height="18"/></g>
+<!-- shop 3 amber -->
+<rect x="382" y="118" width="112" height="42" rx="6" fill="#1e1b4b"/><rect x="376" y="112" width="112" height="42" rx="6" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="386" y="124" width="60" height="26" rx="4" fill="url(#glass)" stroke="#1e1b4b" stroke-width="2"/><rect x="454" y="122" width="26" height="32" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="374" y="98" width="116" height="18" rx="5" fill="#fbbf24" stroke="#1e1b4b" stroke-width="3"/><g fill="#fdfaf6"><rect x="396" y="98" width="6" height="18"/><rect x="426" y="98" width="6" height="18"/><rect x="456" y="98" width="6" height="18"/></g>
+<!-- shop 4 pink -->
+<rect x="520" y="118" width="112" height="42" rx="6" fill="#1e1b4b"/><rect x="514" y="112" width="112" height="42" rx="6" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="524" y="124" width="60" height="26" rx="4" fill="url(#glass)" stroke="#1e1b4b" stroke-width="2"/><rect x="592" y="122" width="26" height="32" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="512" y="98" width="116" height="18" rx="5" fill="#fb7185" stroke="#1e1b4b" stroke-width="3"/><g fill="#fdfaf6"><rect x="534" y="98" width="6" height="18"/><rect x="564" y="98" width="6" height="18"/><rect x="594" y="98" width="6" height="18"/></g>
+<!-- shop 5 sky -->
+<rect x="658" y="118" width="112" height="42" rx="6" fill="#1e1b4b"/><rect x="652" y="112" width="112" height="42" rx="6" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="662" y="124" width="60" height="26" rx="4" fill="url(#glass)" stroke="#1e1b4b" stroke-width="2"/><rect x="730" y="122" width="26" height="32" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="650" y="98" width="116" height="18" rx="5" fill="#38bdf8" stroke="#1e1b4b" stroke-width="3"/><g fill="#fdfaf6"><rect x="672" y="98" width="6" height="18"/><rect x="702" y="98" width="6" height="18"/><rect x="732" y="98" width="6" height="18"/></g>
+<!-- shop 6 amber (light slime) -->
+<rect x="796" y="118" width="112" height="42" rx="6" fill="#1e1b4b"/><rect x="790" y="112" width="112" height="42" rx="6" fill="#efe7d8" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="800" y="124" width="60" height="26" rx="4" fill="url(#glass)" stroke="#1e1b4b" stroke-width="2"/><rect x="868" y="122" width="26" height="32" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="788" y="98" width="116" height="18" rx="5" fill="#fbbf24" stroke="#1e1b4b" stroke-width="3"/><g fill="#fdfaf6"><rect x="810" y="98" width="6" height="18"/><rect x="840" y="98" width="6" height="18"/><rect x="870" y="98" width="6" height="18"/></g>
+<!-- shop 7 pink (contaminated/closed) -->
+<rect x="934" y="118" width="112" height="42" rx="6" fill="#1e1b4b"/><rect x="928" y="112" width="112" height="42" rx="6" fill="#efe7d8" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="938" y="124" width="60" height="26" rx="4" fill="#0d2417" stroke="#1e1b4b" stroke-width="2"/><rect x="1006" y="122" width="26" height="32" rx="3" fill="#2e1065" stroke="#1e1b4b" stroke-width="2"/>
+<rect x="926" y="98" width="116" height="18" rx="5" fill="#fb7185" stroke="#1e1b4b" stroke-width="3"/><g fill="#fdfaf6"><rect x="948" y="98" width="6" height="18"/><rect x="978" y="98" width="6" height="18"/><rect x="1008" y="98" width="6" height="18"/></g>
+</g>
+
+<!-- bus stop / Ponto -->
+<g>
+<rect x="246" y="356" width="58" height="10" rx="3" fill="#ef4444" stroke="#1e1b4b" stroke-width="3"/>
+<rect x="250" y="366" width="5" height="22" fill="#1e1b4b"/><rect x="296" y="366" width="5" height="22" fill="#1e1b4b"/>
+<rect x="256" y="380" width="42" height="8" rx="2" fill="#fbbf24" stroke="#1e1b4b" stroke-width="2"/>
+</g>
+
+<!-- people on clean side -->
+<g stroke="#1e1b4b" stroke-width="2">
+<rect x="246" y="186" width="9" height="13" rx="3" fill="#38bdf8"/><circle cx="250.5" cy="182" r="5" fill="#fbbf24"/>
+<rect x="316" y="186" width="9" height="13" rx="3" fill="#fb7185"/><circle cx="320.5" cy="182" r="5" fill="#fbbf24"/>
+<rect x="470" y="300" width="9" height="13" rx="3" fill="#fbbf24"/><circle cx="474.5" cy="296" r="5" fill="#fb7185"/>
+</g>
+
+<!-- ============ GOSMA / CONTAMINATION (medium, spreading from East) ============ -->
+<g stroke="#166534" stroke-linejoin="round">
+<!-- dense core hugging the East edge -->
+<path d="M1140 350 C1052 342 1004 374 988 422 C972 468 1014 502 992 546 C972 588 1016 616 1088 612 C1120 610 1140 596 1140 560 L1140 350 Z" fill="url(#slimeR)" stroke-width="6"/>
+<path d="M1082 470 C1042 462 1018 488 1024 516 C1030 546 1066 558 1096 546 C1122 536 1126 498 1110 482 C1100 472 1090 470 1082 470 Z" fill="#166534" stroke="none" opacity="0.5"/>
+<g stroke-width="2">
+<circle cx="1042" cy="402" r="10" fill="#7CFF4F"/><circle cx="1092" cy="440" r="8" fill="#7CFF4F"/><circle cx="1018" cy="470" r="7" fill="#7CFF4F"/><circle cx="1062" cy="520" r="11" fill="#7CFF4F"/><circle cx="1100" cy="560" r="9" fill="#7CFF4F"/><circle cx="1036" cy="560" r="7" fill="#7CFF4F"/><circle cx="1078" cy="592" r="6" fill="#7CFF4F"/>
+</g>
+<g stroke="none" fill="#166534"><circle cx="1056" cy="430" r="5"/><circle cx="1096" cy="500" r="6"/><circle cx="1046" cy="544" r="4"/></g>
+<g stroke="#166534" stroke-width="2" fill="#39ff14"><circle cx="1014" cy="606" r="7"/><circle cx="1006" cy="624" r="4"/><circle cx="1066" cy="620" r="6"/></g>
+
+<!-- street puddle on Av1 (East end) -->
+<path d="M1136 360 C1080 356 1030 366 980 372 C940 376 902 372 902 386 C902 400 950 398 1002 396 C1062 394 1120 392 1136 384 Z" fill="#39ff14" stroke-width="4" opacity="0.9"/>
+<g stroke="#166534" stroke-width="2" fill="#7CFF4F" opacity="0.9"><circle cx="950" cy="378" r="6"/><circle cx="1010" cy="384" r="7"/><circle cx="1070" cy="378" r="5"/></g>
+
+<!-- slime climbing tower bases (R2-C3) -->
+<path d="M744 568 C800 558 860 574 920 566 C962 560 982 574 980 592 C978 610 940 616 900 614 C840 612 780 616 748 606 C738 600 740 576 744 568 Z" fill="#39ff14" stroke-width="4" opacity="0.88"/>
+<g stroke="#166534" stroke-width="2" fill="#7CFF4F" opacity="0.9"><circle cx="800" cy="586" r="7"/><circle cx="868" cy="592" r="6"/><circle cx="930" cy="586" r="5"/></g>
+<!-- drips from contaminated towers -->
+<g stroke="#166534" stroke-width="2" fill="#39ff14" opacity="0.85"><circle cx="852" cy="600" r="5"/><circle cx="852" cy="616" r="3"/><circle cx="964" cy="498" r="5"/><circle cx="964" cy="514" r="3"/></g>
+
+<!-- puddle on AvV2 (lower, slime running down) -->
+<path d="M704 470 C726 466 742 482 738 508 C734 536 744 562 736 588 C730 606 706 612 700 600 C696 584 706 560 702 536 C698 510 696 484 704 470 Z" fill="#4ade80" stroke-width="4" opacity="0.85"/>
+<g stroke="#166534" stroke-width="2" fill="#7CFF4F" opacity="0.85"><circle cx="718" cy="500" r="5"/><circle cx="720" cy="552" r="5"/></g>
+
+<!-- mid blob between bank and towers -->
+<path d="M860 410 C900 402 944 416 948 444 C950 466 918 480 884 474 C852 468 836 446 842 428 C846 416 854 412 860 410 Z" fill="#4ade80" stroke-width="3" opacity="0.82"/>
+<g stroke="#166534" stroke-width="2" fill="#7CFF4F" opacity="0.85"><circle cx="888" cy="442" r="6"/><circle cx="918" cy="436" r="4"/></g>
+
+<!-- slime spilling from AvV2 top (from Fabrilândia side) -->
+<path d="M706 250 C726 246 742 264 738 296 C734 328 742 348 730 360 C720 360 706 340 704 312 C702 286 700 266 706 250 Z" fill="#7CFF4F" stroke-width="3" opacity="0.55"/>
+
+<!-- slime over closed shop 7 -->
+<path d="M940 124 C980 118 1022 124 1040 142 C1046 152 1030 160 1010 158 C980 156 950 160 940 152 C934 144 934 130 940 124 Z" fill="#39ff14" stroke-width="3" opacity="0.85"/>
+<g stroke="#166534" stroke-width="2" fill="#39ff14" opacity="0.85"><circle cx="958" cy="160" r="5"/><circle cx="958" cy="174" r="3"/><circle cx="1014" cy="160" r="5"/><circle cx="1014" cy="172" r="3"/></g>
+<!-- light drips shop 6 -->
+<g stroke="#166534" stroke-width="2" fill="#4ade80" opacity="0.7"><circle cx="846" cy="156" r="4"/><circle cx="846" cy="167" r="2"/></g>
+
+<!-- sparse splashes reaching toward center (translucent) -->
+<path d="M720 420 C742 414 762 426 758 448 C754 466 728 470 712 460 C698 452 700 430 720 420 Z" fill="#7CFF4F" stroke-width="3" opacity="0.5"/>
+<path d="M662 502 C680 498 692 510 688 524 C684 540 662 542 652 532 C644 524 648 508 662 502 Z" fill="#7CFF4F" stroke-width="3" opacity="0.5"/>
+<path d="M612 540 C626 536 636 546 632 558 C628 570 612 572 604 562 C598 554 602 544 612 540 Z" fill="#7CFF4F" stroke-width="2" opacity="0.33"/>
+<g stroke="none" fill="#7CFF4F" opacity="0.32"><circle cx="650" cy="470" r="6"/><circle cx="690" cy="566" r="5"/><circle cx="624" cy="500" r="4"/></g>
+</g>
+
+<!-- ============ MAP LABELS ============ -->
+<g font-weight="700">
+<g>
+<rect x="146" y="164" width="184" height="30" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/>
+<text x="238" y="185" text-anchor="middle" font-size="17" fill="#1e1b4b">Rua Comercial</text>
+</g>
+<g>
+<rect x="442" y="316" width="180" height="30" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/>
+<text x="532" y="337" text-anchor="middle" font-size="17" fill="#1e1b4b">Praça Central</text>
+</g>
+<g>
+<rect x="90" y="361" width="120" height="28" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/>
+<text x="150" y="381" text-anchor="middle" font-size="15" fill="#1e1b4b">Av. Central</text>
+</g>
+<g>
+<rect x="892" y="438" width="200" height="32" rx="9" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="3"/>
+<text x="992" y="460" text-anchor="middle" font-size="17" fill="#166534">Zona Contaminada</text>
+</g>
+</g>
+
+<!-- ============ TITLE BANNER ============ -->
+<g>
+<polygon points="336,42 300,62 336,82" fill="#fbbf24" stroke="#1e1b4b" stroke-width="4"/>
+<polygon points="864,42 900,62 864,82" fill="#fbbf24" stroke="#1e1b4b" stroke-width="4"/>
+<rect x="342" y="42" width="516" height="50" rx="14" fill="#1e1b4b"/>
+<rect x="336" y="36" width="516" height="50" rx="14" fill="#fbbf24" stroke="#1e1b4b" stroke-width="5"/>
+<text x="594" y="70" text-anchor="middle" font-size="29" font-weight="700" fill="#fdfaf6" style="paint-order:stroke" stroke="#1e1b4b" stroke-width="2">Sinópolis — Centro Comercial</text>
+</g>
+
+<!-- ============ COMPASS ============ -->
+<g>
+<circle cx="1045" cy="682" r="54" fill="#f5efe6" stroke="#1e1b4b" stroke-width="5"/>
+<circle cx="1045" cy="682" r="44" fill="none" stroke="#6d28d9" stroke-width="2"/>
+<polygon points="1045,636 1057,670 1091,682 1057,694 1045,728 1033,694 999,682 1033,670" fill="#a78bfa" stroke="#1e1b4b" stroke-width="3"/>
+<polygon points="1045,636 1057,670 1033,670" fill="#ef4444" stroke="#1e1b4b" stroke-width="3"/>
+<circle cx="1045" cy="682" r="5" fill="#1e1b4b"/>
+<text x="1045" y="654" text-anchor="middle" font-size="16" font-weight="700" fill="#1e1b4b">N</text>
+<text x="1045" y="722" text-anchor="middle" font-size="16" font-weight="700" fill="#1e1b4b">S</text>
+<text x="1078" y="688" text-anchor="middle" font-size="16" font-weight="700" fill="#1e1b4b">L</text>
+<text x="1012" y="688" text-anchor="middle" font-size="16" font-weight="700" fill="#1e1b4b">O</text>
+</g>
+
+<!-- ============ LEGEND ============ -->
+<g>
+<rect x="67" y="631" width="645" height="118" rx="14" fill="#1e1b4b"/>
+<rect x="60" y="624" width="645" height="118" rx="14" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="5"/>
+<text x="80" y="652" font-size="22" font-weight="700" fill="#1e1b4b">Legenda</text>
+
+<!-- column 1 -->
+<g>
+<rect x="84" y="668" width="22" height="11" rx="3" fill="#fb7185" stroke="#1e1b4b" stroke-width="2"/>
+<text x="116" y="679" font-size="16" fill="#1e1b4b">Loja</text>
+<rect x="84" y="696" width="22" height="16" rx="3" fill="#a78bfa" stroke="#1e1b4b" stroke-width="2"/><rect x="89" y="700" width="12" height="6" fill="url(#glass)"/>
+<text x="116" y="710" font-size="16" fill="#1e1b4b">Shopping</text>
+<circle cx="95" cy="731" r="9" fill="url(#water)" stroke="#1e1b4b" stroke-width="2"/>
+<text x="116" y="737" font-size="16" fill="#1e1b4b">Praça</text>
+</g>
+<!-- column 2 -->
+<g>
+<rect x="282" y="668" width="26" height="12" rx="2" fill="#a78bfa" stroke="#1e1b4b" stroke-width="2"/><line x1="285" y1="674" x2="305" y2="674" stroke="#fdfaf6" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="318" y="679" font-size="16" fill="#1e1b4b">Avenida</text>
+<rect x="288" y="694" width="14" height="20" rx="2" fill="#38bdf8" stroke="#1e1b4b" stroke-width="2"/>
+<text x="318" y="710" font-size="16" fill="#1e1b4b">Prédio</text>
+<polygon points="284,728 306,728 295,720" fill="#fbbf24" stroke="#1e1b4b" stroke-width="2"/><rect x="286" y="728" width="18" height="10" fill="#efe7d8" stroke="#1e1b4b" stroke-width="2"/>
+<text x="318" y="737" font-size="16" fill="#1e1b4b">Banco</text>
+</g>
+<!-- column 3 : slime levels -->
+<g>
+<path d="M484 666 C494 662 506 666 508 674 C510 682 500 686 492 684 C482 682 478 670 484 666 Z" fill="#7CFF4F" stroke="#166534" stroke-width="2" opacity="0.5"/>
+<text x="520" y="679" font-size="16" fill="#1e1b4b">Gosma leve</text>
+<path d="M484 698 C494 694 506 698 508 706 C510 714 500 718 492 716 C482 714 478 702 484 698 Z" fill="#39ff14" stroke="#166534" stroke-width="2"/>
+<text x="520" y="710" font-size="16" fill="#1e1b4b">Gosma média</text>
+<path d="M484 728 C494 724 506 728 508 736 C510 744 500 748 492 746 C482 744 478 732 484 728 Z" fill="#166534" stroke="#7CFF4F" stroke-width="2"/>
+<text x="520" y="740" font-size="16" fill="#1e1b4b">Gosma tomada</text>
+</g>
+</g>
+
+</g>
+</svg>

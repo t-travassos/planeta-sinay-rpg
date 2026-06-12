@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" role="img">
+<style>@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700');text{font-family:'Fredoka','Baloo 2','Comic Sans MS',sans-serif;font-weight:600;}</style>
+  <title>Vale Sinay - Mapa do Estado</title>
+  <desc>Mapa de RPG cartoon do Vale Sinay com tres cidades, rio, montanhas e gradiente de gosma neon a partir de Fabrilandia.</desc>
+  <defs>
+    <radialGradient id="vignette" cx="50%" cy="48%" r="62%">
+      <stop offset="55%" stop-color="#6d28d9" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#4c1d95" stop-opacity="0.32"/>
+    </radialGradient>
+    <linearGradient id="banner" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#4c1d95"/>
+    </linearGradient>
+    <radialGradient id="slimeSpread" gradientUnits="userSpaceOnUse" cx="905" cy="320" r="560">
+      <stop offset="0" stop-color="#39ff14" stop-opacity="0.92"/>
+      <stop offset="0.42" stop-color="#4ade80" stop-opacity="0.52"/>
+      <stop offset="0.78" stop-color="#7CFF4F" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#7CFF4F" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="slimeGlow" gradientUnits="userSpaceOnUse" cx="900" cy="330" r="180">
+      <stop offset="0" stop-color="#7CFF4F" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#7CFF4F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ===== BACKGROUND + FRAME ===== -->
+  <rect x="0" y="0" width="1200" height="800" fill="#0d061f"/>
+  <rect x="14" y="14" width="1172" height="772" rx="44" ry="44" fill="#2e1065" stroke="#1e1b4b" stroke-width="7"/>
+  <rect x="40" y="40" width="1120" height="720" rx="28" ry="28" fill="#f5efe6" stroke="#1e1b4b" stroke-width="5"/>
+  <rect x="40" y="40" width="1120" height="720" rx="28" ry="28" fill="url(#vignette)"/>
+
+  <!-- ===== MOUNTAINS (rim of the valley) ===== -->
+  <g stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round">
+    <polygon points="90,236 180,150 270,236" fill="#4c1d95"/>
+    <polygon points="156,180 180,150 204,180" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="262,236 360,126 458,236" fill="#6d28d9"/>
+    <polygon points="334,160 360,126 386,160" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="450,236 540,150 630,236" fill="#4c1d95"/>
+    <polygon points="516,180 540,150 564,180" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="622,236 720,122 818,236" fill="#6d28d9"/>
+    <polygon points="694,158 720,122 746,158" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="812,236 900,142 988,236" fill="#4c1d95"/>
+    <polygon points="876,174 900,142 924,174" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="980,236 1066,160 1148,236" fill="#6d28d9"/>
+    <polygon points="1044,190 1066,160 1088,190" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="55,520 96,418 152,520" fill="#6d28d9"/>
+    <polygon points="80,452 96,418 112,452" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="66,648 120,556 182,648" fill="#4c1d95"/>
+    <polygon points="104,588 120,556 136,588" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="1052,458 1100,360 1146,458" fill="#4c1d95"/>
+    <polygon points="1083,396 1100,360 1117,396" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="96,748 170,684 252,748" fill="#6d28d9"/>
+    <polygon points="151,712 170,684 189,712" fill="#fdfaf6" stroke-width="3"/>
+    <polygon points="694,752 760,706 832,752" fill="#4c1d95"/>
+    <polygon points="744,726 760,706 776,726" fill="#fdfaf6" stroke-width="3"/>
+  </g>
+
+  <!-- ===== VALLEY FLOOR ===== -->
+  <path d="M 150,210 C 110,330 120,520 200,635 C 300,720 520,725 700,705 C 880,690 1075,650 1055,460 C 1045,330 1010,205 840,185 C 660,168 420,178 300,180 C 230,182 175,170 150,210 Z" fill="#efe7d8" stroke="#1e1b4b" stroke-width="5"/>
+
+  <!-- ===== RIVER ===== -->
+  <path d="M 455,188 C 520,250 555,300 525,360 C 500,415 440,440 460,505 C 478,560 590,580 640,635 C 672,672 690,705 700,712" fill="none" stroke="#1e1b4b" stroke-width="30" stroke-linecap="round"/>
+  <path d="M 455,188 C 520,250 555,300 525,360 C 500,415 440,440 460,505 C 478,560 590,580 640,635 C 672,672 690,705 700,712" fill="none" stroke="#bfe3ff" stroke-width="20" stroke-linecap="round"/>
+
+  <!-- ===== ROADS ===== -->
+  <path d="M 840,360 C 770,410 700,445 628,505" fill="none" stroke="#1e1b4b" stroke-width="20" stroke-linecap="round"/>
+  <path d="M 840,360 C 770,410 700,445 628,505" fill="none" stroke="#f5efe6" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="14 16"/>
+  <path d="M 520,560 C 440,588 400,580 320,594" fill="none" stroke="#1e1b4b" stroke-width="20" stroke-linecap="round"/>
+  <path d="M 520,560 C 440,588 400,580 320,594" fill="none" stroke="#f5efe6" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="14 16"/>
+
+  <!-- ===== FABRILANDIA (factory, slime epicenter) ===== -->
+  <g stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round">
+    <rect x="786" y="276" width="176" height="92" rx="14" fill="#1e1b4b" stroke="none"/>
+    <rect x="780" y="270" width="176" height="92" rx="14" fill="#4c1d95"/>
+    <ellipse cx="816" cy="270" rx="30" ry="22" fill="#6d28d9"/>
+    <ellipse cx="906" cy="268" rx="40" ry="30" fill="#6d28d9"/>
+    <rect x="812" y="208" width="20" height="64" fill="#2e1065" stroke-width="4"/>
+    <rect x="808" y="204" width="28" height="11" rx="3" fill="#6d28d9" stroke-width="4"/>
+    <rect x="812" y="230" width="20" height="8" fill="#fbbf24" stroke="none"/>
+    <rect x="882" y="196" width="24" height="76" fill="#2e1065" stroke-width="4"/>
+    <rect x="878" y="192" width="32" height="12" rx="3" fill="#6d28d9" stroke-width="4"/>
+    <rect x="882" y="224" width="24" height="9" fill="#fbbf24" stroke="none"/>
+    <rect x="938" y="210" width="20" height="62" fill="#2e1065" stroke-width="4"/>
+    <rect x="934" y="206" width="28" height="10" rx="3" fill="#6d28d9" stroke-width="4"/>
+    <rect x="938" y="232" width="20" height="8" fill="#fbbf24" stroke="none"/>
+    <rect x="836" y="320" width="48" height="46" rx="6" fill="#2e1065"/>
+    <g fill="#fbbf24" stroke-width="2">
+      <rect x="796" y="300" width="18" height="14" rx="2"/>
+      <rect x="900" y="300" width="18" height="14" rx="2"/>
+      <rect x="930" y="300" width="18" height="14" rx="2"/>
+      <rect x="900" y="330" width="18" height="14" rx="2"/>
+      <rect x="930" y="330" width="18" height="14" rx="2"/>
+      <rect x="796" y="334" width="18" height="14" rx="2"/>
+    </g>
+  </g>
+  <!-- slime smoke from chimneys -->
+  <g stroke="#166534" stroke-width="3">
+    <circle cx="816" cy="196" r="10" fill="#7CFF4F" opacity="0.85"/>
+    <circle cx="804" cy="178" r="12" fill="#7CFF4F" opacity="0.8"/>
+    <circle cx="893" cy="184" r="11" fill="#7CFF4F" opacity="0.9"/>
+    <circle cx="908" cy="164" r="13" fill="#7CFF4F" opacity="0.85"/>
+    <circle cx="926" cy="148" r="12" fill="#7CFF4F" opacity="0.75"/>
+    <circle cx="950" cy="200" r="9" fill="#7CFF4F" opacity="0.8"/>
+    <circle cx="962" cy="184" r="10" fill="#7CFF4F" opacity="0.72"/>
+  </g>
+
+  <!-- ===== SLIME WASH (gradient = contamination density) ===== -->
+  <circle cx="900" cy="330" r="180" fill="url(#slimeGlow)"/>
+  <path d="M 955,240 C 1025,285 1025,390 965,440 C 990,505 935,555 870,535 C 870,595 800,610 760,565 C 700,600 645,575 645,520 C 590,540 545,520 540,485 C 560,455 615,455 660,468 C 690,420 740,415 775,440 C 760,395 790,355 835,355 C 815,310 830,265 870,250 C 905,230 925,232 955,240 Z" fill="url(#slimeSpread)"/>
+
+  <!-- ===== EPICENTRE CARTOON SLIME (dense / tomado) ===== -->
+  <g stroke="#166534" stroke-width="5" stroke-linejoin="round">
+    <path d="M 815,372 C 800,345 845,330 880,345 C 915,330 962,346 960,382 C 988,402 974,448 938,456 C 946,492 900,508 866,488 C 825,506 793,476 805,440 C 778,425 790,388 815,372 Z" fill="#39ff14"/>
+    <ellipse cx="876" cy="402" rx="40" ry="24" fill="#7CFF4F" opacity="0.65" stroke="none"/>
+    <circle cx="845" cy="376" r="7" fill="#7CFF4F" stroke-width="2.5"/>
+    <circle cx="916" cy="372" r="6" fill="#7CFF4F" stroke-width="2.5"/>
+    <circle cx="892" cy="452" r="6" fill="#7CFF4F" stroke-width="2.5"/>
+    <circle cx="840" cy="502" r="9" fill="#4ade80" stroke-width="3"/>
+    <circle cx="906" cy="514" r="7" fill="#4ade80" stroke-width="3"/>
+    <circle cx="962" cy="476" r="6" fill="#4ade80" stroke-width="3"/>
+    <circle cx="835" cy="528" r="4" fill="#39ff14" stroke-width="2"/>
+    <circle cx="930" cy="532" r="4" fill="#39ff14" stroke-width="2"/>
+  </g>
+  <!-- slime creeping up the factory wall -->
+  <g stroke="#166534" stroke-width="4" stroke-linejoin="round">
+    <path d="M 786,300 C 778,318 786,344 806,348 C 800,366 814,374 824,360 C 838,352 832,326 818,318 C 814,300 800,292 786,300 Z" fill="#39ff14" opacity="0.92"/>
+    <circle cx="790" cy="362" r="6" fill="#4ade80" stroke-width="2.5"/>
+  </g>
+
+  <!-- medium connector blob toward Sinopolis -->
+  <g stroke="#166534" stroke-width="4" stroke-linejoin="round" opacity="0.72">
+    <path d="M 648,452 C 638,430 678,422 705,438 C 740,430 766,452 752,478 C 766,500 728,520 700,506 C 668,520 640,500 650,476 C 636,468 638,456 648,452 Z" fill="#4ade80"/>
+    <circle cx="690" cy="462" r="6" fill="#7CFF4F" stroke-width="2.5"/>
+    <circle cx="722" cy="486" r="5" fill="#7CFF4F" stroke-width="2.5"/>
+  </g>
+
+  <!-- ===== SINOPOLIS (urban centre, medium contamination) ===== -->
+  <ellipse cx="610" cy="600" rx="118" ry="15" fill="#1e1b4b"/>
+  <g stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round">
+    <rect x="520" y="508" width="52" height="90" rx="6" fill="#7c3aed"/>
+    <rect x="575" y="474" width="50" height="124" rx="6" fill="#6d28d9"/>
+    <rect x="628" y="516" width="52" height="82" rx="6" fill="#4c1d95"/>
+    <rect x="682" y="498" width="46" height="100" rx="6" fill="#7c3aed"/>
+    <rect x="592" y="464" width="16" height="12" rx="3" fill="#ef4444"/>
+    <rect x="534" y="500" width="24" height="10" rx="3" fill="#ef4444"/>
+    <line x1="600" y1="464" x2="600" y2="448" stroke-width="4" stroke-linecap="round"/>
+    <g fill="#fbbf24" stroke-width="2">
+      <rect x="530" y="522" width="12" height="13" rx="1"/>
+      <rect x="550" y="522" width="12" height="13" rx="1"/>
+      <rect x="530" y="548" width="12" height="13" rx="1"/>
+      <rect x="585" y="488" width="12" height="14" rx="1"/>
+      <rect x="603" y="488" width="12" height="14" rx="1"/>
+      <rect x="585" y="514" width="12" height="14" rx="1"/>
+      <rect x="603" y="514" width="12" height="14" rx="1"/>
+      <rect x="638" y="528" width="12" height="13" rx="1"/>
+      <rect x="656" y="528" width="12" height="13" rx="1"/>
+      <rect x="692" y="510" width="12" height="13" rx="1"/>
+      <rect x="708" y="510" width="12" height="13" rx="1"/>
+      <rect x="692" y="536" width="12" height="13" rx="1"/>
+    </g>
+  </g>
+  <!-- medium slime patches on part of the city -->
+  <g stroke="#166534" stroke-width="4" stroke-linejoin="round" opacity="0.62">
+    <path d="M 624,512 C 616,498 648,492 672,500 C 706,494 726,516 714,538 C 728,562 690,582 658,568 C 624,580 606,556 620,536 C 610,528 614,516 624,512 Z" fill="#4ade80"/>
+    <circle cx="664" cy="520" r="6" fill="#7CFF4F" stroke-width="2.5"/>
+    <circle cx="700" cy="544" r="5" fill="#7CFF4F" stroke-width="2.5"/>
+    <circle cx="650" cy="582" r="5" fill="#4ade80" stroke-width="2.5"/>
+  </g>
+
+  <!-- ===== VILA ACONCHEGO (cosy farm town, low contamination) ===== -->
+  <ellipse cx="258" cy="626" rx="98" ry="14" fill="#1e1b4b"/>
+  <g stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round">
+    <polygon points="150,628 240,620 250,660 160,668" fill="#fbbf24"/>
+    <line x1="172" y1="626" x2="180" y2="664" stroke-width="2"/>
+    <line x1="194" y1="624" x2="202" y2="662" stroke-width="2"/>
+    <line x1="216" y1="622" x2="224" y2="660" stroke-width="2"/>
+    <rect x="300" y="574" width="54" height="44" rx="5" fill="#ef4444"/>
+    <polygon points="296,574 327,550 358,574" fill="#4c1d95"/>
+    <rect x="318" y="592" width="20" height="26" rx="2" fill="#2e1065"/>
+    <rect x="214" y="556" width="76" height="62" rx="6" fill="#fdfaf6"/>
+    <polygon points="204,558 252,520 300,558" fill="#ef4444"/>
+    <rect x="244" y="586" width="22" height="32" rx="3" fill="#6d28d9"/>
+    <rect x="224" y="570" width="20" height="18" rx="2" fill="#38bdf8"/>
+    <rect x="272" y="528" width="14" height="22" fill="#6d28d9"/>
+  </g>
+  <!-- faint slime tentacle just arriving from the east -->
+  <g stroke="#166534" stroke-width="3.5" stroke-linejoin="round" opacity="0.4">
+    <path d="M 560,505 C 500,512 455,545 412,572 C 448,580 492,566 524,548 C 552,534 568,524 566,514 Z" fill="#7CFF4F"/>
+    <circle cx="470" cy="552" r="6" fill="#4ade80"/>
+    <circle cx="430" cy="572" r="4" fill="#39ff14"/>
+    <circle cx="408" cy="582" r="3" fill="#39ff14"/>
+  </g>
+
+  <!-- ===== LOCATION LABELS ===== -->
+  <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" text-anchor="middle">
+    <!-- Fabrilandia -->
+    <rect x="572" y="204" width="216" height="58" rx="14" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+    <text x="680" y="230" font-size="22" font-weight="700" fill="#1e1b4b">FABRILANDIA</text>
+    <text x="680" y="251" font-size="14" fill="#166534">Cidade-fabrica - epicentro</text>
+    <!-- Sinopolis -->
+    <rect x="486" y="622" width="228" height="58" rx="14" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+    <text x="600" y="648" font-size="22" font-weight="700" fill="#1e1b4b">SINOPOLIS</text>
+    <text x="600" y="669" font-size="14" fill="#1e1b4b">Centro comercial - contagio medio</text>
+    <!-- Vila Aconchego -->
+    <rect x="128" y="460" width="252" height="58" rx="14" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="4"/>
+    <text x="254" y="486" font-size="21" font-weight="700" fill="#1e1b4b">VILA ACONCHEGO</text>
+    <text x="254" y="507" font-size="14" fill="#1e1b4b">Vila pacata - pouca gosma</text>
+  </g>
+
+  <!-- ===== TITLE BANNER ===== -->
+  <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif">
+    <polygon points="252,52 312,40 312,96 252,84" fill="#2e1065" stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="948,52 888,40 888,96 948,84" fill="#2e1065" stroke="#1e1b4b" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="300" y="36" width="600" height="62" rx="18" fill="url(#banner)" stroke="#1e1b4b" stroke-width="6"/>
+    <text x="600" y="78" text-anchor="middle" font-size="33" font-weight="700" fill="#fdfaf6" style="paint-order:stroke" stroke="#1e1b4b" stroke-width="2">Vale Sinay — Mapa do Estado</text>
+  </g>
+
+  <!-- ===== COMPASS ===== -->
+  <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif" text-anchor="middle">
+    <circle cx="150" cy="256" r="56" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="5"/>
+    <circle cx="150" cy="256" r="46" fill="none" stroke="#a78bfa" stroke-width="3"/>
+    <polygon points="150,222 158,256 150,290 142,256" fill="#6d28d9" stroke="#1e1b4b" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="116,256 150,248 184,256 150,264" fill="#a78bfa" stroke="#1e1b4b" stroke-width="3" stroke-linejoin="round"/>
+    <polygon points="150,222 145,240 155,240" fill="#fb7185" stroke="#1e1b4b" stroke-width="2"/>
+    <circle cx="150" cy="256" r="5" fill="#fbbf24" stroke="#1e1b4b" stroke-width="2"/>
+    <text x="150" y="240" font-size="15" font-weight="700" fill="#1e1b4b">N</text>
+    <text x="150" y="298" font-size="15" font-weight="700" fill="#1e1b4b">S</text>
+    <text x="178" y="261" font-size="15" font-weight="700" fill="#1e1b4b">L</text>
+    <text x="122" y="261" font-size="15" font-weight="700" fill="#1e1b4b">O</text>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g font-family="Fredoka, 'Baloo 2', 'Comic Sans MS', sans-serif">
+    <rect x="808" y="542" width="330" height="206" rx="20" fill="#fdfaf6" stroke="#1e1b4b" stroke-width="5"/>
+    <rect x="828" y="554" width="290" height="34" rx="17" fill="#4c1d95" stroke="#1e1b4b" stroke-width="4"/>
+    <text x="973" y="578" text-anchor="middle" font-size="20" font-weight="700" fill="#fdfaf6" style="paint-order:stroke" stroke="#1e1b4b" stroke-width="2">LEGENDA</text>
+
+    <!-- left column: symbols -->
+    <g stroke="#1e1b4b">
+      <polygon points="832,612 846,600 860,612" fill="#ef4444" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="836" y="612" width="20" height="10" fill="#6d28d9" stroke-width="2.5"/>
+      <line x1="832" y1="642" x2="862" y2="642" stroke-width="9" stroke-linecap="round"/>
+      <line x1="832" y1="642" x2="862" y2="642" stroke="#f5efe6" stroke-width="2.5" stroke-dasharray="5 5"/>
+      <path d="M832,670 q7,-8 14,0 q7,8 14,0" fill="none" stroke-width="9" stroke-linecap="round"/>
+      <path d="M832,670 q7,-8 14,0 q7,8 14,0" fill="none" stroke="#bfe3ff" stroke-width="5.5" stroke-linecap="round"/>
+      <polygon points="832,700 847,684 862,700" fill="#4c1d95" stroke-width="2.5" stroke-linejoin="round"/>
+      <polygon points="842,692 847,684 852,692" fill="#fdfaf6" stroke-width="1.5"/>
+    </g>
+    <g font-size="15" fill="#1e1b4b">
+      <text x="874" y="616">Cidade</text>
+      <text x="874" y="646">Estrada</text>
+      <text x="874" y="674">Rio</text>
+      <text x="874" y="704">Montanha</text>
+    </g>
+
+    <!-- right column: gosma levels -->
+    <text x="1012" y="612" font-size="14" font-weight="700" fill="#166534">GOSMA</text>
+    <g stroke="#166534">
+      <circle cx="992" cy="634" r="11" fill="#7CFF4F" opacity="0.4" stroke-width="2.5"/>
+      <circle cx="992" cy="662" r="12" fill="#4ade80" opacity="0.7" stroke-width="3"/>
+      <circle cx="992" cy="690" r="13" fill="#39ff14" opacity="0.95" stroke-width="3.5"/>
+      <circle cx="996" cy="686" r="4" fill="#7CFF4F" stroke-width="1.5"/>
+    </g>
+    <g font-size="15" fill="#1e1b4b">
+      <text x="1012" y="639">Leve</text>
+      <text x="1012" y="667">Medio</text>
+      <text x="1012" y="695">Tomado</text>
+    </g>
+
+    <text x="973" y="728" text-anchor="middle" font-size="12.5" fill="#4c1d95">Locais: Fabrilandia - Sinopolis - Vila Aconchego</text>
+  </g>
+</svg>
