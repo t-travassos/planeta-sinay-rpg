@@ -48,6 +48,30 @@
   .full { grid-column:1/-1; }
   footer { text-align:center; color:rgba(255,255,255,.4); font-size:.8rem; margin-top:36px; }
   .missing { display:flex; align-items:center; justify-content:center; height:100%; color:#9a93a8; font-weight:600; }
+
+  /* clique para ampliar */
+  .map { position:relative; cursor:zoom-in; }
+  .map::after {
+    content:'🔍 ampliar'; position:absolute; bottom:10px; right:10px;
+    background:#1e1b4b; color:#7CFF4F; font-size:.72rem; font-weight:700;
+    padding:4px 9px; border-radius:.55rem; opacity:0; transition:opacity .15s; pointer-events:none;
+  }
+  .map:hover::after { opacity:1; }
+
+  /* lightbox (modal) */
+  .lightbox { position:fixed; inset:0; z-index:100; background:rgba(13,6,31,.93);
+    display:none; flex-direction:column; align-items:center; justify-content:center; padding:18px; }
+  .lightbox.open { display:flex; }
+  .lightbox-title { color:#fff; font-weight:700; font-size:1.15rem; margin-bottom:10px;
+    text-align:center; text-shadow:2px 2px 0 var(--ink); }
+  .lightbox-stage { width:min(96vw,1400px); height:min(80vh,940px); background:#f5efe6;
+    border:5px solid var(--ink); border-radius:1rem; box-shadow:8px 8px 0 var(--ink); overflow:hidden; }
+  .lightbox-stage object { width:100%; height:100%; display:block; }
+  .lightbox-bar { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .lb-btn { font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; text-decoration:none;
+    border:3px solid var(--ink); border-radius:.7rem; box-shadow:4px 4px 0 var(--ink); padding:9px 16px; color:var(--ink);
+    display:inline-flex; align-items:center; gap:6px; }
+  .lb-btn:active { transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
 </style>
 </head>
 <body>
@@ -91,5 +115,58 @@
 </div>
 
 <footer>Planeta Sinay RPG · Mapas da Temporada 1 · estética cartoon/HQ</footer>
+
+<!-- Lightbox para ampliar o mapa -->
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Mapa ampliado">
+  <div class="lightbox-title" id="lbTitle"></div>
+  <div class="lightbox-stage"><object id="lbObj" type="image/svg+xml"></object></div>
+  <div class="lightbox-bar">
+    <a class="lb-btn" id="lbOpen" target="_blank" rel="noopener" style="background:#7CFF4F">↗ Abrir em nova aba</a>
+    <button class="lb-btn" id="lbClose" style="background:#fb7185">✕ Fechar</button>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var lb=document.getElementById('lightbox'),
+        obj=document.getElementById('lbObj'),
+        title=document.getElementById('lbTitle'),
+        openLink=document.getElementById('lbOpen');
+
+    function openMap(src, t){
+      obj.setAttribute('data', src);
+      title.textContent = t;
+      openLink.href = src;
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+    }
+    function closeMap(){
+      lb.classList.remove('open');
+      lb.setAttribute('aria-hidden','true');
+      obj.removeAttribute('data');   // descarrega o SVG
+      document.body.style.overflow='';
+    }
+
+    document.querySelectorAll('.card').forEach(function(card){
+      var map=card.querySelector('.map'),
+          o=card.querySelector('object'),
+          titleEl=card.querySelector('.title'),
+          src=o?o.getAttribute('data'):null;
+      var t=titleEl ? titleEl.textContent.replace(/\s+/g,' ').trim() : 'Mapa';
+      if(map && src){
+        map.setAttribute('role','button');
+        map.setAttribute('tabindex','0');
+        map.setAttribute('aria-label','Ampliar '+t);
+        map.addEventListener('click', function(){ openMap(src, t); });
+        map.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openMap(src, t); } });
+      }
+    });
+
+    document.getElementById('lbClose').addEventListener('click', closeMap);
+    lb.addEventListener('click', function(e){ if(e.target===lb) closeMap(); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMap(); });
+  })();
+</script>
 </body>
 </html>
