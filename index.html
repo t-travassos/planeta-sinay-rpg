@@ -381,8 +381,8 @@
       </div>
       <span id="corruptActiveBadge" class="hidden-i cartoon-sm bg-red-500 text-white px-3 py-1 text-xs font-bold slime-overlay">☣️ ATIVA AGORA</span>
     </div>
-    <p id="corruptGmHint" class="text-sm text-ink/60 font-semibold mb-3">Os status e habilidades do monstro são definidos pelo <b>Mestre</b>.</p>
-    <div class="space-y-3">
+    <p id="corruptGmHint" class="hidden-i text-sm text-ink/60 font-semibold mb-3">Modo Mestre: defina os status e habilidades do monstro abaixo.</p>
+    <div id="cfEdit" class="space-y-3">
       <label class="block"><span class="text-xs font-bold text-ink uppercase tracking-wide">Nome do monstro</span>
         <input id="cfName" class="cartoon-input px-3 py-2 w-full mt-1" placeholder="Ex.: Gosmonstro Faminto" /></label>
       <div class="flex gap-2 flex-wrap items-end">
@@ -400,6 +400,7 @@
       <label class="block"><span class="text-xs font-bold text-ink uppercase tracking-wide">Habilidades corrompidas</span>
         <textarea id="cfAbility" rows="2" class="cartoon-input px-3 py-2 w-full mt-1 resize-y" placeholder="Poderes da forma monstro (ex.: cospe gosma que infecta; regenera ao tocar poças…)"></textarea></label>
     </div>
+    <div id="cfDisplay" class="hidden-i"></div>
   </section>
 
   <!-- ================= E. ATRIBUTOS VITAIS ================= -->
@@ -864,23 +865,45 @@ function buildStatics() {
 /* ---------- 6. RENDER / UPDATE ---------- */
 function isFocused(el) { return document.activeElement === el; }
 
-/* Forma corrompida (status/habilidades do monstro) — editável só pelo Mestre */
+/* Forma corrompida — Mestre edita; jogador vê (revelada ao corromper) */
 function renderCorruptedForm() {
   const cf = state.corruptedForm || cleanCorruptedForm();
-  const lock = !isGM || readOnly;
-  const set = (sel, val) => { const el = $(sel); if (!el) return; if (document.activeElement !== el) el.value = val; el.disabled = lock; };
-  set('#cfName', cf.name || '');
-  set('#cfLife', cf.life ?? 0);
-  set('#cf-agilidade', cf.attributes.agilidade ?? 0);
-  set('#cf-blefe', cf.attributes.blefe ?? 0);
-  set('#cf-poder', cf.attributes.poder ?? 0);
-  set('#cf-furtividade', cf.attributes.furtividade ?? 0);
-  set('#cfAbility', cf.ability || '');
+  const canEdit = isGM && !readOnly;
   $('#corruptActiveBadge').classList.toggle('hidden-i', !state.corrupted);
-  const hint = $('#corruptGmHint');
-  if (hint && document.activeElement !== hint) hint.textContent = isGM
-    ? 'Modo Mestre: defina os status e habilidades do monstro abaixo.'
-    : 'Os status e habilidades do monstro são definidos pelo Mestre.';
+  $('#corruptGmHint').classList.toggle('hidden-i', !canEdit);
+  $('#cfEdit').classList.toggle('hidden-i', !canEdit);
+  $('#cfDisplay').classList.toggle('hidden-i', canEdit);
+
+  if (canEdit) {
+    // Mestre: campos editáveis
+    const set = (sel, val) => { const el = $(sel); if (el && document.activeElement !== el) el.value = val; };
+    set('#cfName', cf.name || ''); set('#cfLife', cf.life ?? 0);
+    set('#cf-agilidade', cf.attributes.agilidade ?? 0); set('#cf-blefe', cf.attributes.blefe ?? 0);
+    set('#cf-poder', cf.attributes.poder ?? 0); set('#cf-furtividade', cf.attributes.furtividade ?? 0);
+    set('#cfAbility', cf.ability || '');
+    return;
+  }
+
+  // Jogador / espectador: vê só quando corrompido (antes é segredo do Mestre)
+  const disp = $('#cfDisplay');
+  if (!state.corrupted) {
+    disp.innerHTML = `<div class="cartoon-sm bg-ink/5 p-4 text-center font-semibold text-ink/60">🔒 Sua forma corrompida é um segredo do Mestre. Você só descobre no que vira… se for corrompido.</div>`;
+    return;
+  }
+  const a = cf.attributes;
+  disp.innerHTML = `
+    <div class="cartoon-sm bg-red-50 p-4">
+      <div class="text-center font-bold text-red-600 mb-1 slime-overlay">👹 VOCÊ ESTÁ CORROMPIDO — agora você é:</div>
+      <div class="text-2xl font-bold text-ink text-center mb-3">${escapeHtml(cf.name || 'Monstro de Gosma')}</div>
+      <div class="flex gap-2 justify-center flex-wrap text-sm font-bold mb-3">
+        <span class="px-2 py-1 rounded-lg bg-rose-100 border-2 border-ink">❤️ ${cf.life}</span>
+        <span class="px-2 py-1 rounded-lg bg-white border-2 border-ink">Agilidade ${a.agilidade}</span>
+        <span class="px-2 py-1 rounded-lg bg-white border-2 border-ink">Blefe ${a.blefe}</span>
+        <span class="px-2 py-1 rounded-lg bg-white border-2 border-ink">Poder ${a.poder}</span>
+        <span class="px-2 py-1 rounded-lg bg-white border-2 border-ink">Furtiv. ${a.furtividade}</span>
+      </div>
+      ${cf.ability ? `<div class="cartoon-sm bg-white p-3"><div class="text-xs font-bold uppercase text-grape mb-1">Habilidades corrompidas</div><div class="text-sm font-semibold whitespace-pre-wrap">${escapeHtml(cf.ability)}</div></div>` : '<div class="text-sm text-ink/50 font-semibold text-center">O Mestre ainda não detalhou as habilidades.</div>'}
+    </div>`;
 }
 
 function update() {
