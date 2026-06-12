@@ -538,8 +538,20 @@
 
     <label class="block mb-2"><span class="text-xs font-bold text-ink uppercase tracking-wide">Nome</span>
       <input id="giveName" class="cartoon-input px-3 py-2 w-full mt-1" placeholder="Ex.: Espada de Gosma" /></label>
-    <label class="block mb-2"><span class="text-xs font-bold text-ink uppercase tracking-wide">O que faz</span>
+    <label class="block mb-2"><span class="text-xs font-bold text-ink uppercase tracking-wide">O que faz (texto)</span>
       <input id="giveDesc" class="cartoon-input px-3 py-2 w-full mt-1" placeholder="Ex.: +2 de Poder" /></label>
+    <div class="flex gap-2 items-end mb-2">
+      <label class="block grow"><span class="text-xs font-bold text-ink uppercase tracking-wide">Bônus de atributo (aplica na hora)</span>
+        <select id="giveBonusAttr" class="cartoon-input px-3 py-2 w-full mt-1 bg-white">
+          <option value="">Nenhum</option>
+          <option value="agilidade">Agilidade</option>
+          <option value="blefe">Blefe</option>
+          <option value="poder">Poder</option>
+          <option value="furtividade">Furtividade</option>
+        </select></label>
+      <label class="block"><span class="text-xs font-bold text-ink uppercase tracking-wide">Valor</span>
+        <input id="giveBonusVal" type="number" value="0" class="cartoon-input px-3 py-2 w-20 mt-1 text-center" /></label>
+    </div>
     <label id="giveQtyWrap" class="block mb-3"><span class="text-xs font-bold text-ink uppercase tracking-wide">Quantidade</span>
       <input id="giveQty" type="number" min="1" value="1" class="cartoon-input px-3 py-2 w-24 mt-1 text-center" /></label>
 
@@ -669,6 +681,16 @@ function defaultSheet(ownerId, shortId) {
 function attrTotalPts(s) { return (TYPES[s.type]||TYPES.blindado).attrPoints + (+s.bonusAttrPoints || 0); }
 function trainTotalPts(s) { return (TYPES[s.type]||TYPES.blindado).trainPoints + (+s.bonusTrainPoints || 0); }
 
+/* Bônus de atributo vindo dos itens/amuletos (aplica imediatamente) */
+const ATTR_KEYS = ['agilidade', 'blefe', 'poder', 'furtividade'];
+function itemBonuses(s) {
+  const b = { agilidade: 0, blefe: 0, poder: 0, furtividade: 0 };
+  (Array.isArray(s.items) ? s.items : []).forEach(it => {
+    if (it.bonusAttr && Object.prototype.hasOwnProperty.call(b, it.bonusAttr)) b[it.bonusAttr] += (+it.bonusVal || 0);
+  });
+  return b;
+}
+
 let state = defaultSheet();
 let myUserId = null;        // uid do Firebase (ou id local)
 let activeDocId = null;     // doc atualmente carregado
@@ -785,6 +807,7 @@ function buildStatics() {
         <span id="attr-${a.key}" class="text-2xl font-bold text-ink w-7 text-center">0</span>
         <button class="cartoon-btn bg-emerald-200 w-8 h-8 text-lg leading-none" data-attr="${a.key}" data-dir="1">+</button>
       </div>
+      <div id="attrbonus-${a.key}" class="text-xs font-bold text-emerald-600 leading-none" style="min-height:14px"></div>
     </div>`).join('');
 
   // Skills
@@ -846,7 +869,13 @@ function update() {
   $('#sanityMax').textContent = '/ ' + state.sanity.max;
 
   // Atributos adicionais + pool
-  ATTRS.forEach(a => { $('#attr-'+a.key).textContent = state.attributes[a.key]; });
+  const ib = itemBonuses(state);
+  ATTRS.forEach(a => {
+    const base = +state.attributes[a.key] || 0;
+    $('#attr-'+a.key).textContent = base + (ib[a.key] || 0);   // valor efetivo (base + itens)
+    const badge = $('#attrbonus-'+a.key);
+    if (badge) badge.textContent = ib[a.key] ? `+${ib[a.key]} 💎` : '';
+  });
   const attrTot = attrTotalPts(state);
   const attrPool = attrTot - sum(state.attributes);
   $('#attrPool').textContent = attrPool;
@@ -955,6 +984,8 @@ function cleanSheet(s) {
       kind: it.kind === 'amuleto' ? 'amuleto' : 'item',
       name: String(it.name || ''), qty: Math.max(1, +it.qty || 1), desc: String(it.desc || ''),
       photo: String(it.photo || ''),
+      bonusAttr: ['agilidade','blefe','poder','furtividade'].includes(it.bonusAttr) ? it.bonusAttr : '',
+      bonusVal: Math.trunc(+it.bonusVal || 0),
     })),
     corrupted: !!s.corrupted, updatedAt: s.updatedAt,
   };
@@ -1355,7 +1386,7 @@ function onAvatarFile(e) {
 function addItem(kind) {
   if (!isGM || guard()) return;   // só o Mestre cria itens
   if (!Array.isArray(state.items)) state.items = [];
-  state.items.push({ kind: kind === 'amuleto' ? 'amuleto' : 'item', name: '', qty: 1, desc: '', photo: '' });
+  state.items.push({ kind: kind === 'amuleto' ? 'amuleto' : 'item', name: '', qty: 1, desc: '', photo: '', bonusAttr: '', bonusVal: 0 });
   persist();
   renderInventory(true);
 }
@@ -1398,8 +1429,8 @@ let giveTargetId = null, giveKind = 'item', givePhoto = '';
 
 /* Itens prontos (catálogo do Mestre) */
 const ITEM_PRESETS = [
-  { kind: 'amuleto', name: '🟢 Gema Verde', desc: '+2 de Poder',     color: 'bg-emerald-200' },
-  { kind: 'amuleto', name: '🩷 Gema Rosa',  desc: '+2 de Agilidade', color: 'bg-rose-200' },
+  { kind: 'amuleto', name: '🟢 Gema Verde', desc: '+2 de Poder',     color: 'bg-emerald-200', bonusAttr: 'poder',     bonusVal: 2 },
+  { kind: 'amuleto', name: '🩷 Gema Rosa',  desc: '+2 de Agilidade', color: 'bg-rose-200',    bonusAttr: 'agilidade', bonusVal: 2 },
 ];
 function renderPresets() {
   const row = $('#presetRow'); if (!row) return;
@@ -1413,6 +1444,8 @@ function fillGive(p) {
   setGiveKind(p.kind);
   $('#giveName').value = p.name;
   $('#giveDesc').value = p.desc;
+  $('#giveBonusAttr').value = p.bonusAttr || '';
+  $('#giveBonusVal').value = p.bonusVal || 0;
 }
 
 function openGiveModal(id) {
@@ -1420,6 +1453,7 @@ function openGiveModal(id) {
   giveTargetId = id; givePhoto = '';
   $('#giveTarget').textContent = 'Para: ' + (s.name || s.shortId || id);
   $('#giveName').value = ''; $('#giveDesc').value = ''; $('#giveQty').value = '1';
+  $('#giveBonusAttr').value = ''; $('#giveBonusVal').value = '0';
   setGiveKind('item');
   $('#giveModal').classList.remove('hidden-i');
   lucide.createIcons();
@@ -1454,7 +1488,11 @@ async function giveItemTo(id, item) {
 async function doGive(all) {
   const name = $('#giveName').value.trim();
   if (!name) { toast('Dê um nome ao item.'); return; }
-  const base = { kind: giveKind, name, desc: $('#giveDesc').value.trim(), qty: Math.max(1, +$('#giveQty').value || 1), photo: givePhoto || '' };
+  const base = {
+    kind: giveKind, name, desc: $('#giveDesc').value.trim(),
+    qty: Math.max(1, +$('#giveQty').value || 1), photo: givePhoto || '',
+    bonusAttr: $('#giveBonusAttr').value, bonusVal: Math.trunc(+$('#giveBonusVal').value || 0),
+  };
   const targets = all ? Object.keys(gmSheets) : (giveTargetId ? [giveTargetId] : []);
   let ok = 0;
   for (const id of targets) { if (await giveItemTo(id, { ...base })) ok++; }
@@ -1520,7 +1558,7 @@ function renderInventory(force) {
   wrap.querySelectorAll('[data-inv-kind]').forEach(el =>
     el.addEventListener('click', () => { if (guard()) return; const it = state.items[+el.dataset.invKind]; it.kind = it.kind === 'amuleto' ? 'item' : 'amuleto'; persist(); renderInventory(true); }));
   wrap.querySelectorAll('[data-inv-del]').forEach(el =>
-    el.addEventListener('click', () => { if (guard()) return; state.items.splice(+el.dataset.invDel, 1); persist(); renderInventory(true); }));
+    el.addEventListener('click', () => { if (guard()) return; state.items.splice(+el.dataset.invDel, 1); commit(); renderInventory(true); }));
   wrap.querySelectorAll('[data-inv-photo]').forEach(el =>
     el.addEventListener('click', () => { if (guard()) return; pendingItemPhoto = +el.dataset.invPhoto; $('#itemPhotoFile').click(); }));
 }
