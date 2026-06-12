@@ -445,19 +445,19 @@
     <div id="skillGrid" class="grid sm:grid-cols-2 gap-3"></div>
   </section>
 
-  <!-- ================= G. BANCO DE DADOS DE BACKUP ================= -->
+  <!-- ================= G. ITENS & AMULETOS ================= -->
   <section class="cartoon p-5" data-editable>
-    <div class="flex items-center gap-2 mb-3">
-      <i data-lucide="database" class="w-6 h-6 text-grape"></i>
-      <h2 class="text-xl font-bold text-ink">Banco de Dados de Backup</h2>
+    <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+      <div class="flex items-center gap-2">
+        <i data-lucide="backpack" class="w-6 h-6 text-grape"></i>
+        <h2 class="text-xl font-bold text-ink">Itens &amp; Amuletos</h2>
+      </div>
+      <div class="flex gap-2">
+        <button id="addItemBtn" class="cartoon-btn bg-amber-200 px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Item 🎒</button>
+        <button id="addAmuletoBtn" class="cartoon-btn bg-violet-200 px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Amuleto 🔮</button>
+      </div>
     </div>
-    <p class="text-sm text-ink/70 font-semibold mb-2">Código serializado (Base64). Copie e guarde em arquivo de texto, ou cole um código e clique em <b>Carregar</b>.</p>
-    <textarea id="backupBox" rows="3" class="cartoon-input px-3 py-2 w-full font-mono text-xs resize-y" spellcheck="false"></textarea>
-    <div class="flex gap-2 mt-2 flex-wrap">
-      <button id="backupRefresh" class="cartoon-btn bg-paper px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Gerar código</button>
-      <button id="backupCopy" class="cartoon-btn bg-neon px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="copy" class="w-4 h-4"></i> Copiar</button>
-      <button id="backupLoad" class="cartoon-btn bg-sanity px-3 py-1.5 text-sm flex items-center gap-1.5"><i data-lucide="download" class="w-4 h-4"></i> Carregar</button>
-    </div>
+    <div id="inventoryList" class="space-y-3"></div>
   </section>
 
   <footer class="text-center text-white/40 text-xs pt-4 pb-2">
@@ -615,6 +615,7 @@ function defaultSheet(ownerId, shortId) {
     skills: { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 },
     bonusAttrPoints: 0,   // pontos extras de atributo concedidos pelo Mestre
     bonusTrainPoints: 0,  // pontos extras de treino concedidos pelo Mestre
+    items: [],            // itens e amuletos: { kind:'item'|'amuleto', name, qty, desc }
     corrupted: false,
     updatedAt: Date.now(),
   };
@@ -835,6 +836,9 @@ function update() {
     $('#avatarNormal').classList.remove('monsterShake');
     $('#avatarCorrupted').classList.remove('monsterShake');
   }
+
+  // Itens & Amuletos (preserva foco se o usuário estiver digitando)
+  renderInventory();
 }
 
 function setRing(sel, cur, max) {
@@ -902,6 +906,10 @@ function cleanSheet(s) {
     sanity: { current: s.sanity.current, max: s.sanity.max },
     attributes: { ...s.attributes }, skills: { ...s.skills },
     bonusAttrPoints: +s.bonusAttrPoints || 0, bonusTrainPoints: +s.bonusTrainPoints || 0,
+    items: (Array.isArray(s.items) ? s.items : []).map(it => ({
+      kind: it.kind === 'amuleto' ? 'amuleto' : 'item',
+      name: String(it.name || ''), qty: Math.max(1, +it.qty || 1), desc: String(it.desc || ''),
+    })),
     corrupted: !!s.corrupted, updatedAt: s.updatedAt,
   };
 }
@@ -1002,6 +1010,7 @@ function mergeIntoState(data) {
     skills: { ...base.skills, ...(data.skills||{}) },
   };
   if (!TYPES[state.type]) state.type = 'blindado';   // tipo inválido -> padrão seguro
+  if (!Array.isArray(state.items)) state.items = [];
 }
 
 /* índice local de fichas (para o hub do narrador no modo local) */
@@ -1185,9 +1194,8 @@ function bindEvents() {
   $('#avatarFile').addEventListener('change', onAvatarFile);
 
   // Backup
-  $('#backupRefresh').addEventListener('click', () => { $('#backupBox').value = makeBackup(); toast('Código gerado.'); });
-  $('#backupCopy').addEventListener('click', () => { copy($('#backupBox').value || makeBackup()); toast('Copiado!'); });
-  $('#backupLoad').addEventListener('click', loadBackup);
+  $('#addItemBtn').addEventListener('click', () => addItem('item'));
+  $('#addAmuletoBtn').addEventListener('click', () => addItem('amuleto'));
 
   // Share / GM
   $('#shareBtn').addEventListener('click', openShare);
@@ -1289,23 +1297,50 @@ function onAvatarFile(e) {
   e.target.value = '';
 }
 
-/* ---------- Backup Base64 ---------- */
-function makeBackup() {
-  return btoa(unescape(encodeURIComponent(JSON.stringify(cleanSheet(state)))));
-}
-async function loadBackup() {
+/* ---------- Itens & Amuletos ---------- */
+function addItem(kind) {
   if (guard()) return;
-  const code = $('#backupBox').value.trim();
-  if (!code) { toast('Cole um código primeiro.'); return; }
-  try {
-    const data = JSON.parse(decodeURIComponent(escape(atob(code))));
-    const ok = await confirmModal('Carregar backup?', 'Isso substitui os dados atuais da ficha por este código.');
-    if (!ok) return;
-    data.ownerId = state.ownerId; data.shortId = data.shortId || state.shortId;
-    mergeIntoState(data);
-    commit();
-    toast('Backup carregado!');
-  } catch (err) { toast('Código inválido.'); }
+  if (!Array.isArray(state.items)) state.items = [];
+  state.items.push({ kind: kind === 'amuleto' ? 'amuleto' : 'item', name: '', qty: 1, desc: '' });
+  persist();
+  renderInventory(true);
+}
+
+function renderInventory(force) {
+  const wrap = $('#inventoryList');
+  if (!wrap) return;
+  // não reconstrói enquanto o usuário digita aqui (preserva o foco/cursor)
+  if (!force && wrap.contains(document.activeElement)) return;
+  const items = Array.isArray(state.items) ? state.items : [];
+  if (!items.length) {
+    wrap.innerHTML = '<p class="text-sm text-ink/50 font-semibold">Mochila vazia. Use os botões acima para adicionar um Item 🎒 ou um Amuleto 🔮.</p>';
+    return;
+  }
+  const ro = readOnly ? 'disabled' : '';
+  wrap.innerHTML = items.map((it, i) => {
+    const amul = it.kind === 'amuleto';
+    return `
+    <div class="cartoon-sm ${amul ? 'bg-violet-50' : 'bg-amber-50'} p-3" data-inv="${i}">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button class="cartoon-btn bg-paper px-2 py-1 text-xl leading-none" data-inv-kind="${i}" title="Alternar Item/Amuleto" ${ro}>${amul ? '🔮' : '🎒'}</button>
+        <input class="cartoon-input px-3 py-1.5 grow min-w-[8rem]" data-inv-name="${i}" value="${escapeHtml(it.name)}" placeholder="${amul ? 'Nome do amuleto' : 'Nome do item'}" ${ro} />
+        ${amul ? '' : `<input type="number" min="1" class="cartoon-input px-2 py-1.5 w-16 text-center" data-inv-qty="${i}" value="${(+it.qty || 1)}" title="Quantidade" ${ro} />`}
+        <button class="cartoon-btn bg-rose-300 px-2.5 py-1.5" data-inv-del="${i}" aria-label="Remover" ${ro}>✕</button>
+      </div>
+      <input class="cartoon-input px-3 py-1.5 w-full mt-2 text-sm" data-inv-desc="${i}" value="${escapeHtml(it.desc)}" placeholder="${amul ? 'Efeito mágico do amuleto…' : 'Para que serve / descrição…'}" ${ro} />
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-inv-name]').forEach(el =>
+    el.addEventListener('input', () => { state.items[+el.dataset.invName].name = el.value; persistSoft(); }));
+  wrap.querySelectorAll('[data-inv-desc]').forEach(el =>
+    el.addEventListener('input', () => { state.items[+el.dataset.invDesc].desc = el.value; persistSoft(); }));
+  wrap.querySelectorAll('[data-inv-qty]').forEach(el =>
+    el.addEventListener('change', () => { state.items[+el.dataset.invQty].qty = Math.max(1, +el.value || 1); persistSoft(); }));
+  wrap.querySelectorAll('[data-inv-kind]').forEach(el =>
+    el.addEventListener('click', () => { if (guard()) return; const it = state.items[+el.dataset.invKind]; it.kind = it.kind === 'amuleto' ? 'item' : 'amuleto'; persist(); renderInventory(true); }));
+  wrap.querySelectorAll('[data-inv-del]').forEach(el =>
+    el.addEventListener('click', () => { if (guard()) return; state.items.splice(+el.dataset.invDel, 1); persist(); renderInventory(true); }));
 }
 
 /* ---------- Compartilhar ---------- */

@@ -68,7 +68,7 @@ service cloud.firestore {
 - **Compartilhar Siny**: gera link de espectador + mensagem pronta pro WhatsApp.
 - **Modo Espectador** via `?siny={sinyId}` (somente leitura, com banner amarelo) e botão **Clonar Ficha** (cria uma cópia na sua lista).
 - **Mesa do Narrador** (senha **`inay1234`**): lista os Sinies em tempo real e aplica Dano (−10 ❤️), Pânico (−10 🧠), Contaminação (+10% ☣️), **distribui pontos extras de Atributo e Treino** (+1/−1), abre a ficha pra edição direta e deleta fichas.
-- **Backup Base64** para salvar/carregar a ficha como texto.
+- **Itens &amp; Amuletos**: inventário na ficha — adicione itens 🎒 (com quantidade) e amuletos 🔮 (com efeito), edite e remova; tudo sincronizado.
 
 ---
 
