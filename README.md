@@ -57,16 +57,17 @@ service cloud.firestore {
 
 ## 🎮 Funcionalidades
 
+- **Vários Sinies por dispositivo**: barra **Meus Sinies** com chips para **criar**, **trocar** e **apagar** quantos bonecos quiser no mesmo aparelho (cada um com seu próprio documento).
 - **5 Tipos Psicológicos** (Blindado, Obcecado, Desgastado, Explosivo, Sonhador) que redefinem Vida, Sanidade e os pools de pontos.
 - **Atributos vitais**: Vida ❤️ e Sanidade 🧠 em destaque (anéis), + Agilidade, Blefe, Poder, Furtividade.
-- **Pool de Atributos e de Treino** com trava automática (libere com o **Modo Livre / Mestre**).
+- **Pool de Atributos e de Treino** com trava automática. Os limites são os do Tipo **+ pontos extras concedidos pelo Mestre**.
 - **8 Perícias** com 4 níveis cada, sincronizadas ao pool de treino.
 - **Medidor de Infecção por Gosma** (0–100%) que muda de verde a vermelho.
 - **Mutação do Monstro**: quando Sanidade ≤ 0 **ou** Infecção ≥ 100%, a ficha entra em corrupção (tremor, distorção de cor, overlay "Siny Corrompido!", troca pro avatar corrompido). Botão **Purificar Siny** restaura.
-- **Duplo avatar** (saudável/corrompido): upload local (Base64) ou templates vetoriais (🌸 Flor, ☁️ Nuvem, 🟢 Gosma).
+- **Duplo avatar** (saudável/corrompido): upload local (redimensionado p/ miniatura) ou templates vetoriais (🌸 Flor, ☁️ Nuvem, 🟢 Gosma).
 - **Compartilhar Siny**: gera link de espectador + mensagem pronta pro WhatsApp.
-- **Modo Espectador** via `?siny={userId}` (somente leitura, com banner amarelo) e botão **Clonar Ficha**.
-- **Mesa do Narrador** (senha **`inay1234`**): lista os Sinies em tempo real e aplica Dano (−10 ❤️), Pânico (−10 🧠), Contaminação (+10% ☣️), abre a ficha pra edição direta e deleta fichas.
+- **Modo Espectador** via `?siny={sinyId}` (somente leitura, com banner amarelo) e botão **Clonar Ficha** (cria uma cópia na sua lista).
+- **Mesa do Narrador** (senha **`inay1234`**): lista os Sinies em tempo real e aplica Dano (−10 ❤️), Pânico (−10 🧠), Contaminação (+10% ☣️), **distribui pontos extras de Atributo e Treino** (+1/−1), abre a ficha pra edição direta e deleta fichas.
 - **Backup Base64** para salvar/carregar a ficha como texto.
 
 ---

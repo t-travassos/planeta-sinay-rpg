@@ -228,6 +228,22 @@
 
 <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
 
+  <!-- ================= A2. MEUS SINIES (vários por dispositivo) ================= -->
+  <section class="cartoon p-4">
+    <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+      <div class="flex items-center gap-2 text-ink font-bold">
+        <i data-lucide="users-round" class="w-5 h-5 text-grape"></i>
+        <span>Meus Sinies</span>
+      </div>
+      <button id="newSinyBtn" class="cartoon-btn bg-neon text-ink px-3 py-1.5 text-sm flex items-center gap-1.5">
+        <i data-lucide="plus" class="w-4 h-4"></i> Novo Siny
+      </button>
+    </div>
+    <div id="rosterList" class="flex gap-2 flex-wrap">
+      <span class="text-sm text-ink/50 font-semibold">Carregando seus Sinies…</span>
+    </div>
+  </section>
+
   <!-- ================= B. CARREGAMENTO RÁPIDO POR ID ================= -->
   <section class="cartoon p-4 flex flex-col sm:flex-row items-center gap-3 justify-between">
     <div class="flex items-center gap-2 text-ink font-bold">
@@ -348,10 +364,6 @@
         <i data-lucide="heart-pulse" class="w-6 h-6 text-life"></i>
         <h2 class="text-xl font-bold text-ink">Atributos Vitais</h2>
       </div>
-      <label class="cartoon-sm bg-amber-100 px-3 py-1.5 flex items-center gap-2 text-sm font-bold cursor-pointer">
-        <input id="freeMode" type="checkbox" class="w-4 h-4 accent-grape" />
-        <i data-lucide="unlock" class="w-4 h-4"></i> Modo Livre / Mestre
-      </label>
     </div>
 
     <!-- Primordiais -->
@@ -574,10 +586,10 @@ const AVATAR_TPL = {
 /* ---------- 3. ESTADO ---------- */
 const C = 2 * Math.PI * 62; // circunferência dos anéis
 
-function defaultSheet(ownerId) {
+function defaultSheet(ownerId, shortId) {
   const t = TYPES.blindado;
   return {
-    shortId: genShortId(),
+    shortId: shortId || genShortId(),
     ownerId: ownerId || null,
     type: 'blindado',
     name: '', work: '',
@@ -589,11 +601,16 @@ function defaultSheet(ownerId) {
     sanity: { current: t.sanity, max: t.sanity },
     attributes: { agilidade:0, blefe:0, poder:0, furtividade:0 },
     skills: { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 },
-    freeMode: false,
+    bonusAttrPoints: 0,   // pontos extras de atributo concedidos pelo Mestre
+    bonusTrainPoints: 0,  // pontos extras de treino concedidos pelo Mestre
     corrupted: false,
     updatedAt: Date.now(),
   };
 }
+
+/* Totais de pontos = base do tipo + bônus do Mestre */
+function attrTotalPts(s) { return (TYPES[s.type]||TYPES.blindado).attrPoints + (+s.bonusAttrPoints || 0); }
+function trainTotalPts(s) { return (TYPES[s.type]||TYPES.blindado).trainPoints + (+s.bonusTrainPoints || 0); }
 
 let state = defaultSheet();
 let myUserId = null;        // uid do Firebase (ou id local)
@@ -612,6 +629,11 @@ let lastSavedStamp = 0;     // updatedAt do último save próprio (anti-eco)
 /* chaves de localStorage centralizadas */
 const LS_SHEET = 'sinay-sheet-', LS_INDEX = 'sinay-index', LS_UID = 'sinay-local-uid';
 const sheetKey = (id) => LS_SHEET + id;
+
+/* roster: vários Sinies por dispositivo (id do doc === shortId) */
+let roster = [];                                   // [{id, name, type}]
+const rosterKey = () => 'sinay-roster-' + myUserId;
+const activeKey = () => 'sinay-active-' + myUserId;
 
 /* limites de corrupção (sem números mágicos espalhados) */
 const SANITY_MIN = 0, INFECTION_MAX = 100;
@@ -745,7 +767,6 @@ function update() {
   if (!isFocused($('#nameInput'))) $('#nameInput').value = state.name;
   if (!isFocused($('#workInput'))) $('#workInput').value = state.work;
   if (!isFocused($('#abilityInput'))) $('#abilityInput').value = state.ability;
-  $('#freeMode').checked = !!state.freeMode;
 
   // Avatares (render seguro + cache anti-flicker)
   renderAvatar($('#avatarNormal'), state.avatarNormal);
@@ -768,9 +789,10 @@ function update() {
 
   // Atributos adicionais + pool
   ATTRS.forEach(a => { $('#attr-'+a.key).textContent = state.attributes[a.key]; });
-  const attrPool = t.attrPoints - sum(state.attributes);
+  const attrTot = attrTotalPts(state);
+  const attrPool = attrTot - sum(state.attributes);
   $('#attrPool').textContent = attrPool;
-  $('#attrTotal').textContent = t.attrPoints;
+  $('#attrTotal').textContent = attrTot + ((+state.bonusAttrPoints>0) ? ` (+${state.bonusAttrPoints} do Mestre)` : '');
   $('#attrPoolPill').classList.toggle('bg-rose-600', attrPool < 0);
   $('#attrPoolPill').classList.toggle('bg-grape', attrPool >= 0);
 
@@ -783,9 +805,10 @@ function update() {
       btn.setAttribute('aria-pressed', String(filled));
     });
   });
-  const trainPool = t.trainPoints - sum(state.skills);
+  const trainTot = trainTotalPts(state);
+  const trainPool = trainTot - sum(state.skills);
   $('#trainPool').textContent = trainPool;
-  $('#trainTotal').textContent = t.trainPoints;
+  $('#trainTotal').textContent = trainTot + ((+state.bonusTrainPoints>0) ? ` (+${state.bonusTrainPoints} do Mestre)` : '');
   $('#trainPoolPill').classList.toggle('bg-rose-600', trainPool < 0);
   $('#trainPoolPill').classList.toggle('bg-emerald-700', trainPool >= 0);
 
@@ -834,6 +857,7 @@ function diffSheet(cur, prev) {
 
 function persist() {
   if (readOnly) return;
+  if (!gmEditing && state.ownerId === myUserId && rosterUpsert(activeDocId, state.name, state.type)) renderRoster();
 
   if (mode === 'cloud') {
     clearTimeout(saveTimer);
@@ -865,7 +889,8 @@ function cleanSheet(s) {
     life: { current: s.life.current, max: s.life.max },
     sanity: { current: s.sanity.current, max: s.sanity.max },
     attributes: { ...s.attributes }, skills: { ...s.skills },
-    freeMode: !!s.freeMode, corrupted: !!s.corrupted, updatedAt: s.updatedAt,
+    bonusAttrPoints: +s.bonusAttrPoints || 0, bonusTrainPoints: +s.bonusTrainPoints || 0,
+    corrupted: !!s.corrupted, updatedAt: s.updatedAt,
   };
 }
 
@@ -927,34 +952,31 @@ async function loadDoc(docId, { readOnlyFlag = false, gmFlag = false } = {}) {
   lastSaved = null; lastSavedStamp = 0;   // baseline novo para este doc
 
   if (mode === 'cloud') {
-    let firstSnapshot = true;   // só cria a ficha na 1ª carga, nunca ao ser deletada
+    let everExisted = false;    // criação é explícita (createNewSiny); aqui nunca recria
     unsub = onSnapshot(sheetRef(docId), (snap) => {
       if (snap.exists()) {
+        everExisted = true;
         const data = snap.data();
-        if (data.updatedAt && data.updatedAt === lastSavedStamp) { firstSnapshot = false; return; } // ignora eco do próprio save
+        if (data.updatedAt && data.updatedAt === lastSavedStamp) return; // ignora eco do próprio save
         mergeIntoState(data);
         checkTransformation();
         update();
         lastSaved = cleanSheet(state);                 // sincroniza baseline com o servidor
         lastSavedStamp = data.updatedAt || lastSavedStamp;
-      } else if (firstSnapshot && docId === myUserId) {
-        // primeiro acesso sem ficha: cria a minha
-        state = defaultSheet(myUserId);
-        lastSaved = null; lastSavedStamp = 0;
-        commit();
-      } else if (!firstSnapshot) {
-        // a ficha foi deletada durante a sessão: NÃO recria sozinha
-        toast('Esta ficha foi removida da mesa.');
-      } else {
-        toast('Ficha não encontrada.');
+        if (!readOnly && !gmEditing && state.ownerId === myUserId && rosterUpsert(activeDocId, state.name, state.type)) renderRoster();
+      } else if (everExisted) {
+        toast('Este Siny foi removido.');              // deletado durante a sessão: NÃO recria
+      } else if (readOnly) {
+        toast('Siny não encontrado.');
       }
-      firstSnapshot = false;
+      // (!everExisted && !readOnly): aguardando a criação propagar — ignora em silêncio
     }, (err) => { console.error(err); setConn('err','Erro de conexão'); });
   } else {
     const raw = localStorage.getItem(sheetKey(docId));
-    if (raw) { mergeIntoState(JSON.parse(raw)); checkTransformation(); update(); lastSaved = cleanSheet(state); }
-    else if (docId === myUserId) { state = defaultSheet(myUserId); commit(); }
-    else { toast('Ficha local não encontrada.'); }
+    if (raw) {
+      mergeIntoState(JSON.parse(raw)); checkTransformation(); update(); lastSaved = cleanSheet(state);
+      if (!readOnly && !gmEditing && rosterUpsert(docId, state.name, state.type)) renderRoster();
+    } else { toast('Siny local não encontrado.'); }
   }
 }
 
@@ -976,6 +998,123 @@ function localIndexAdd(id) {
   if (!idx.includes(id)) { idx.push(id); localStorage.setItem(LS_INDEX, JSON.stringify(idx)); }
 }
 
+/* ---------- Roster: vários Sinies por dispositivo ---------- */
+function loadRosterLocal() {
+  try { roster = JSON.parse(localStorage.getItem(rosterKey()) || '[]'); }
+  catch (e) { roster = []; }
+  if (!Array.isArray(roster)) roster = [];
+}
+function saveRosterLocal() { localStorage.setItem(rosterKey(), JSON.stringify(roster)); }
+function rosterUpsert(id, name, type) {
+  const e = roster.find(r => r.id === id);
+  if (e) { if (e.name === name && e.type === type) return false; e.name = name; e.type = type; }
+  else roster.push({ id, name, type });
+  saveRosterLocal();
+  return true;
+}
+function rosterRemove(id) { roster = roster.filter(r => r.id !== id); saveRosterLocal(); }
+
+/* Recupera os Sinies deste dono direto do Firestore (robusto entre navegadores) */
+async function loadRosterCloud() {
+  try {
+    const res = await getDocs(query(sheetsCol(), where('ownerId', '==', myUserId)));
+    res.forEach(d => {
+      const s = d.data();
+      const e = roster.find(r => r.id === d.id);
+      if (e) { e.name = s.name || ''; e.type = s.type || 'blindado'; }
+      else roster.push({ id: d.id, name: s.name || '', type: s.type || 'blindado' });
+    });
+    saveRosterLocal();
+  } catch (e) { console.warn('Falha ao listar Sinies na nuvem:', e); }
+}
+
+function renderRoster() {
+  const wrap = $('#rosterList');
+  if (!wrap) return;
+  if (!roster.length) {
+    wrap.innerHTML = '<span class="text-sm text-ink/50 font-semibold">Nenhum Siny ainda — clique em “Novo Siny”.</span>';
+    return;
+  }
+  wrap.innerHTML = roster.map(r => {
+    const t = TYPES[r.type] || TYPES.blindado;
+    const active = r.id === activeDocId && !readOnly && !gmEditing;
+    return `
+      <div class="roster-chip cartoon-btn ${active ? 'bg-grape text-white' : 'bg-paper text-ink'} pl-2 pr-1 py-1 flex items-center gap-1.5 text-sm" data-siny="${r.id}" title="Abrir ${escapeHtml(r.name || r.id)}">
+        <span>${t.emoji}</span>
+        <span class="font-bold max-w-[10rem] truncate">${escapeHtml(r.name || 'Sem nome')}</span>
+        <button class="roster-del ${active ? 'bg-rose-300' : 'bg-rose-200'} text-ink rounded-md border-2 border-ink w-5 h-5 leading-none text-xs ml-1" data-del-siny="${r.id}" aria-label="Apagar ${escapeHtml(r.name || r.id)}">×</button>
+      </div>`;
+  }).join('');
+  wrap.querySelectorAll('[data-del-siny]').forEach(b =>
+    b.addEventListener('click', (e) => { e.stopPropagation(); deleteSiny(b.dataset.delSiny); }));
+  wrap.querySelectorAll('[data-siny]').forEach(c =>
+    c.addEventListener('click', () => switchSiny(c.dataset.siny)));
+}
+
+/* Gera um shortId único (= id do documento) */
+async function uniqueShortId() {
+  let id = genShortId();
+  if (mode === 'cloud') {
+    for (let i = 0; i < 5; i++) {
+      try { const snap = await getDoc(sheetRef(id)); if (!snap.exists()) return id; } catch (e) { return id; }
+      id = genShortId();
+    }
+  } else {
+    while (localStorage.getItem(sheetKey(id))) id = genShortId();
+  }
+  return id;
+}
+
+async function createNewSiny() {
+  const id = await uniqueShortId();
+  const sheet = cleanSheet(defaultSheet(myUserId, id));   // shortId === id do doc
+  try {
+    if (mode === 'cloud') await setDoc(sheetRef(id), sheet, { merge: false });
+    else { localStorage.setItem(sheetKey(id), JSON.stringify(sheet)); localIndexAdd(id); }
+  } catch (e) { console.error(e); toast('Erro ao criar Siny.'); return; }
+  rosterUpsert(id, '', 'blindado');
+  await openSiny(id);
+  toast('Novo Siny criado! ✨');
+}
+
+async function openSiny(id) {
+  if (mode === 'cloud') {
+    try {
+      const snap = await getDoc(sheetRef(id));
+      if (!snap.exists()) { rosterRemove(id); toast('Esse Siny não existe mais.'); renderRoster(); return ensureSomeSiny(); }
+    } catch (e) { /* sem leitura: segue */ }
+  }
+  localStorage.setItem(activeKey(), id);
+  await loadDoc(id);          // editável (Siny próprio)
+  renderRoster();
+}
+
+function switchSiny(id) { if (id === activeDocId && !readOnly && !gmEditing) return; openSiny(id); }
+
+async function deleteSiny(id) {
+  const r = roster.find(x => x.id === id);
+  const ok = await confirmModal('Apagar Siny?', `Remover ${r && r.name ? r.name : id} para sempre? (sem desfazer)`);
+  if (!ok) return;
+  if (id === activeDocId && unsub) { unsub(); unsub = null; }   // evita o aviso de "removido"
+  try {
+    if (mode === 'cloud') await deleteDoc(sheetRef(id));
+    else {
+      localStorage.removeItem(sheetKey(id));
+      const idx = JSON.parse(localStorage.getItem(LS_INDEX) || '[]').filter(x => x !== id);
+      localStorage.setItem(LS_INDEX, JSON.stringify(idx));
+    }
+  } catch (e) { console.error(e); toast('Erro ao apagar.'); return; }
+  rosterRemove(id);
+  toast('Siny apagado.');
+  if (id === activeDocId) await ensureSomeSiny();
+  else renderRoster();
+}
+
+async function ensureSomeSiny() {
+  if (roster.length) await openSiny(roster[0].id);
+  else await createNewSiny();
+}
+
 /* ---------- 9. EVENTOS DE EDIÇÃO ---------- */
 function bindEvents() {
   // Tipo psicológico
@@ -992,8 +1131,8 @@ function bindEvents() {
   $('#workInput').addEventListener('input', e => { state.work = e.target.value; persistSoft(); });
   $('#abilityInput').addEventListener('input', e => { state.ability = e.target.value; persistSoft(); });
 
-  // Free mode
-  $('#freeMode').addEventListener('change', e => { state.freeMode = e.target.checked; commit(); });
+  // Novo Siny (roster)
+  $('#newSinyBtn').addEventListener('click', createNewSiny);
 
   // Infecção
   document.querySelectorAll('[data-infect]').forEach(b =>
@@ -1014,9 +1153,8 @@ function bindEvents() {
     if (ab) {
       if (guard()) return;
       const key = ab.dataset.attr, dir = +ab.dataset.dir;
-      const t = TYPES[state.type];
-      const pool = t.attrPoints - sum(state.attributes);
-      if (dir > 0 && !state.freeMode && pool <= 0) { shake($('#attrPoolPill')); return; }
+      const pool = attrTotalPts(state) - sum(state.attributes);
+      if (dir > 0 && pool <= 0) { shake($('#attrPoolPill')); return; }
       state.attributes[key] = clamp(state.attributes[key] + dir, 0, 99);
       commit();
       return;
@@ -1046,7 +1184,10 @@ function bindEvents() {
   $('#gmPass').addEventListener('keydown', e => { if (e.key==='Enter') tryGmEnter(); });
   $('#purifyBtn').addEventListener('click', purify);
   $('#cloneBtn').addEventListener('click', cloneSheet);
-  $('#gmReturnBtn').addEventListener('click', () => loadDoc(myUserId));
+  $('#gmReturnBtn').addEventListener('click', () => {
+    const a = localStorage.getItem(activeKey());
+    if (a && roster.some(r => r.id === a)) openSiny(a); else ensureSomeSiny();
+  });
   $('#loadIdBtn').addEventListener('click', quickLoad);
   $('#loadIdInput').addEventListener('keydown', e => { if (e.key==='Enter') quickLoad(); });
 
@@ -1085,9 +1226,8 @@ function setSkill(key, level) {
   let next = (level === cur) ? cur - 1 : level;
   next = clamp(next, 0, 4);
   const delta = next - cur;
-  const t = TYPES[state.type];
-  const pool = t.trainPoints - sum(state.skills);
-  if (delta > 0 && !state.freeMode && pool < delta) { shake($('#trainPoolPill')); return; }
+  const pool = trainTotalPts(state) - sum(state.skills);
+  if (delta > 0 && pool < delta) { shake($('#trainPoolPill')); return; }
   state.skills[key] = next;
   commit();
 }
@@ -1176,36 +1316,32 @@ function openShare() {
 /* ---------- Clonar (espectador -> minha ficha) ---------- */
 async function cloneSheet() {
   if (mode !== 'cloud') { toast('Clonar exige conexão com o Planeta (Firebase).'); return; }
-  let aviso = 'Uma cópia editável será salva sob o seu próprio ID.';
-  try {
-    const mine = await getDoc(sheetRef(myUserId));
-    if (mine.exists()) aviso = '⚠️ Você já tem uma ficha! Clonar VAI SUBSTITUIR a sua ficha atual (sem desfazer). Gere um backup antes se quiser guardá-la.';
-  } catch (e) { /* sem leitura: segue com aviso padrão */ }
-  const ok = await confirmModal('Clonar esta ficha?', aviso);
+  const ok = await confirmModal('Clonar este Siny?', 'Uma cópia editável será criada na sua lista de Sinies.');
   if (!ok) return;
+  const id = await uniqueShortId();
   const copyState = cleanSheet(state);
   copyState.ownerId = myUserId;
-  copyState.shortId = genShortId();
+  copyState.shortId = id;
   try {
-    await setDoc(sheetRef(myUserId), copyState, { merge: false });
+    await setDoc(sheetRef(id), copyState, { merge: false });
+    rosterUpsert(id, copyState.name, copyState.type);
     history.replaceState(null, '', location.origin + location.pathname);
     readOnly = false; gmEditing = false;
-    await loadDoc(myUserId);
-    toast('Ficha clonada para o seu ID!');
+    await openSiny(id);
+    toast('Siny clonado para a sua lista!');
   } catch (e) { console.error(e); toast('Erro ao clonar.'); }
 }
 
 /* ---------- Carregamento rápido por ID curto ---------- */
 async function quickLoad() {
-  const code = $('#loadIdInput').value.trim().toUpperCase();
+  let code = $('#loadIdInput').value.trim().toUpperCase();
   if (!code) return;
   if (mode !== 'cloud') { toast('Busca por ID exige conexão com o Planeta.'); return; }
+  if (!code.startsWith('SINY-')) code = 'SINY-' + code;
   try {
-    const q = query(sheetsCol(), where('shortId','==', code));
-    const res = await getDocs(q);
-    if (res.empty) { toast('Nenhum Siny com esse ID.'); return; }
-    const found = res.docs[0];
-    location.href = location.origin + location.pathname + '?siny=' + encodeURIComponent(found.id);
+    const snap = await getDoc(sheetRef(code));
+    if (!snap.exists()) { toast('Nenhum Siny com esse ID.'); return; }
+    location.href = location.origin + location.pathname + '?siny=' + encodeURIComponent(code);
   } catch (e) { console.error(e); toast('Erro na busca.'); }
 }
 
@@ -1254,16 +1390,26 @@ function renderGmList() {
             <div class="text-xs font-semibold text-ink/60">${escapeHtml(s.shortId || id.slice(0,10))} · ${escapeHtml(s.work||'—')}</div>
           </div>
         </div>
-        <div class="flex gap-2 text-xs font-bold">
+        <div class="flex gap-2 text-xs font-bold flex-wrap">
           <span class="px-2 py-0.5 rounded-lg bg-rose-100 border-2 border-ink">❤️ ${s.life?.current ?? '?'}</span>
           <span class="px-2 py-0.5 rounded-lg bg-sky-100 border-2 border-ink">🧠 ${s.sanity?.current ?? '?'}</span>
           <span class="px-2 py-0.5 rounded-lg bg-emerald-100 border-2 border-ink">☣️ ${s.infection ?? 0}%</span>
+          <span class="px-2 py-0.5 rounded-lg bg-violet-100 border-2 border-ink">✦ +${(+s.bonusAttrPoints||0)} atr · +${(+s.bonusTrainPoints||0)} trn</span>
         </div>
       </div>
       <div class="flex gap-2 mt-3 flex-wrap">
         <button class="cartoon-btn bg-rose-300 px-2.5 py-1 text-xs" data-gm="dano" data-id="${id}">Dano −10 ❤️</button>
         <button class="cartoon-btn bg-sky-300 px-2.5 py-1 text-xs" data-gm="panico" data-id="${id}">Pânico −10 🧠</button>
         <button class="cartoon-btn bg-emerald-300 px-2.5 py-1 text-xs" data-gm="gosma" data-id="${id}">Gosma +10 ☣️</button>
+      </div>
+      <div class="flex gap-2 mt-2 flex-wrap items-center">
+        <span class="text-xs font-bold text-grape">Pontos extras:</span>
+        <button class="cartoon-btn bg-violet-200 px-2.5 py-1 text-xs" data-gm="attrp" data-id="${id}">Atrib +1</button>
+        <button class="cartoon-btn bg-violet-100 px-2.5 py-1 text-xs" data-gm="attrm" data-id="${id}">Atrib −1</button>
+        <button class="cartoon-btn bg-emerald-200 px-2.5 py-1 text-xs" data-gm="trainp" data-id="${id}">Treino +1</button>
+        <button class="cartoon-btn bg-emerald-100 px-2.5 py-1 text-xs" data-gm="trainm" data-id="${id}">Treino −1</button>
+      </div>
+      <div class="flex gap-2 mt-2 flex-wrap">
         <button class="cartoon-btn bg-amber-200 px-2.5 py-1 text-xs" data-gm="abrir" data-id="${id}">Abrir Ficha</button>
         <button class="cartoon-btn bg-red-400 px-2.5 py-1 text-xs" data-gm="del" data-id="${id}">Deletar</button>
       </div>
@@ -1301,6 +1447,10 @@ async function gmAction(act, id) {
   if (act === 'dano')   upd.life   = { current: clamp((s.life?.current??0) - 10, 0, s.life?.max ?? 999),   max: s.life?.max ?? 100 };
   if (act === 'panico') upd.sanity = { current: clamp((s.sanity?.current??0) - 10, 0, s.sanity?.max ?? 999), max: s.sanity?.max ?? 100 };
   if (act === 'gosma')  upd.infection = clamp((s.infection??0) + 10, 0, 100);
+  if (act === 'attrp')  upd.bonusAttrPoints  = (+s.bonusAttrPoints  || 0) + 1;
+  if (act === 'attrm')  upd.bonusAttrPoints  = Math.max(0, (+s.bonusAttrPoints  || 0) - 1);
+  if (act === 'trainp') upd.bonusTrainPoints = (+s.bonusTrainPoints || 0) + 1;
+  if (act === 'trainm') upd.bonusTrainPoints = Math.max(0, (+s.bonusTrainPoints || 0) - 1);
   // recalcula corrupção
   const newSan = (upd.sanity ? upd.sanity.current : s.sanity?.current) ?? 100;
   const newInf = (upd.infection !== undefined ? upd.infection : s.infection) ?? 0;
@@ -1335,14 +1485,26 @@ async function boot() {
   if (CONFIGURED) await initFirebase();
   else startLocal();
 
-  // Espectador via ?siny=
+  // Roster deste dispositivo (local + nuvem)
+  loadRosterLocal();
+  if (mode === 'cloud') await loadRosterCloud();
+
   const params = new URLSearchParams(location.search);
   const spectate = params.get('siny');
-  if (spectate && spectate !== myUserId) {
-    await loadDoc(spectate, { readOnlyFlag: true });
+  if (spectate) {
+    if (roster.some(r => r.id === spectate)) {
+      // é meu: abre editável e limpa a URL
+      history.replaceState(null, '', location.origin + location.pathname);
+      await openSiny(spectate);
+    } else {
+      await loadDoc(spectate, { readOnlyFlag: true });   // de outra pessoa: espectador
+    }
   } else {
-    await loadDoc(myUserId);
+    const active = localStorage.getItem(activeKey());
+    if (active && roster.some(r => r.id === active)) await openSiny(active);
+    else await ensureSomeSiny();
   }
+  renderRoster();
   update();
 }
 
