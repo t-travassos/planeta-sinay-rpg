@@ -302,7 +302,7 @@ const uid = () => 'x' + Math.random().toString(36).slice(2,9);
 const clamp01 = v => Math.max(0, Math.min(1, v));
 
 /* ---- SYNC ---- */
-function sceneRef(){ return doc(db, `artifacts/${appId}/public/data/sheets/__MESA__`); }
+function sceneRef(){ return doc(db, `artifacts/${appId}/public/data/sheets/MESA-CENA`); }
 
 function scenePayload(){
   // Guardado como uma "ficha" (unico caminho liberado pelas regras). Campos
