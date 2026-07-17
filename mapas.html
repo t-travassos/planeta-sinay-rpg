@@ -72,9 +72,25 @@
     border:3px solid var(--ink); border-radius:.7rem; box-shadow:4px 4px 0 var(--ink); padding:9px 16px; color:var(--ink);
     display:inline-flex; align-items:center; gap:6px; }
   .lb-btn:active { transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
+
+  /* botão fixo para voltar pra ficha */
+  .back-btn {
+    position:fixed; top:14px; left:14px; z-index:120;
+    font-family:inherit; font-weight:700; font-size:.9rem; text-decoration:none;
+    display:inline-flex; align-items:center; gap:7px;
+    background:#7CFF4F; color:var(--ink);
+    border:3px solid var(--ink); border-radius:.8rem; box-shadow:4px 4px 0 var(--ink);
+    padding:9px 15px;
+  }
+  .back-btn:hover { filter:brightness(1.05); }
+  .back-btn:active { transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
+  @media (max-width:560px){
+    .back-btn { font-size:.8rem; padding:8px 12px; top:10px; left:10px; }
+  }
 </style>
 </head>
 <body>
+<a href="index.html" class="back-btn" aria-label="Voltar para a ficha do Siny">⬅ Voltar pra Ficha</a>
 <header>
   <h1>🗺️ Mapas do Planeta Sinay</h1>
   <p>Vale Sinay · Temporada 1 — a gosma vaza da fábrica e toma o estado</p>
