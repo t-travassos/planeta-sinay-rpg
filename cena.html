@@ -643,9 +643,21 @@ $('#clearAll').onclick = () => {
   }
 };
 
+/* ---- Desliga o lápis/borracha e volta pro modo de mover ---- */
+function disableDrawing(){
+  if (mode === 'draw' || mode === 'erase'){
+    mode = 'move';
+    $('#penToggle').textContent = '✏️ Lápis: desligado';
+    $('#eraseToggle').textContent = '🧽 Borracha: desligada';
+    board.classList.remove('drawing','erasing');
+    renderStrokes();
+  }
+}
+
 /* ---- ABAS DO PAINEL ---- */
 document.querySelectorAll('.tab').forEach(tab => {
   tab.onclick = () => {
+    disableDrawing();   // trocar de aba desliga o lápis, senão trava o arrasto dos personagens
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
     tab.classList.add('active');
