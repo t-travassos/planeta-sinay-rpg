@@ -77,8 +77,8 @@
     background:rgba(30,27,75,.85); border:2px solid var(--ink); border-radius:.5rem; padding:1px 6px;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  .gm .token .ball { cursor:grab; }
-  .gm .token.dragging .ball { cursor:grabbing; }
+  .token.movable .ball { cursor:grab; }
+  .token.movable.dragging .ball { cursor:grabbing; }
   .token.sel .ball { outline:4px dashed #fff; outline-offset:2px; }
 
   /* barra de seleção do token (só Mestre) */
@@ -324,12 +324,17 @@ function scenePayload(){
 }
 let lastSaveAt = 0;
 function scheduleSave(){
-  if (!isGM) return;
+  // Mestre salva a cena inteira. Jogador só chega aqui ao arrastar o próprio
+  // personagem (não tem outros controles), então salva apenas os tokens com
+  // merge — nunca sobrescreve desenhos/fundo do Mestre.
   clearTimeout(saveTimer);
   const since = Date.now() - lastSaveAt;
   const doSave = async () => {
     lastSaveAt = Date.now();
-    try { await setDoc(sceneRef(), scenePayload()); }
+    try {
+      if (isGM) await setDoc(sceneRef(), scenePayload());
+      else await setDoc(sceneRef(), { tokens: scene.tokens, updatedAt: Date.now(), updatedBy: myUserId }, { merge:true });
+    }
     catch(e){ console.warn('save falhou', e); }
   };
   if (since > 220) doSave(); else saveTimer = setTimeout(doSave, 220 - since);
@@ -440,7 +445,9 @@ function renderTokens(){
       nm.textContent = t.name;
       el.appendChild(nm);
     }
-    if (isGM) attachTokenDrag(el, t);
+    // Mestre move tudo; jogador move só o personagem dele (ownerId == meu uid).
+    const mine = !!(t.ownerId && myUserId && t.ownerId === myUserId);
+    if (isGM || mine){ el.classList.add('movable'); attachTokenDrag(el, t); }
     board.appendChild(el);
   });
   positionSelbar();
@@ -555,7 +562,7 @@ function applyRole(){
   document.body.classList.toggle('gm', isGM);
   $('#gmBtn').style.display = isGM ? 'none' : '';
   $('#gmExit').style.display = isGM ? '' : 'none';
-  $('#rolewatch').innerHTML = isGM ? '🎛️ Você é o <b style="margin-left:4px">Mestre</b> — monte a cena abaixo' : '👀 Você está vendo a mesa ao vivo';
+  $('#rolewatch').innerHTML = isGM ? '🎛️ Você é o <b style="margin-left:4px">Mestre</b> — monte a cena abaixo' : '👀 Você vê a mesa ao vivo — arraste o <b style="margin-left:4px">seu</b> personagem';
 }
 
 /* ---- CARREGAR PERSONAGENS (Sinies) ---- */
@@ -568,7 +575,8 @@ async function loadChars(){
     snap.forEach(d => {
       const s=d.data();
       if (d.id === 'MESA-CENA' || s._mesa) return;  // a própria cena não é um personagem
-      items.push({ name: s.name || ('SINY-'+(s.shortId||'?')), type: s.type||'blindado' });
+      // ownerId identifica o dono: é ele quem poderá arrastar esse personagem.
+      items.push({ name: s.name || ('SINY-'+(s.shortId||'?')), type: s.type||'blindado', ownerId: s.ownerId || null });
     });
     if (!items.length){ list.innerHTML = '<span class="muted">Nenhum Siny criado ainda. Crie fichas primeiro ou use os Objetos.</span>'; return; }
     list.innerHTML = '';
@@ -577,15 +585,15 @@ async function loadChars(){
       const b = document.createElement('button');
       b.className = 'charbtn';
       b.innerHTML = `<span class="mini" style="background:${m.color}">${m.emoji}</span>${escapeHtml(it.name)}`;
-      b.onclick = () => addToken({ kind:'char', name:it.name, color:m.color, emoji:m.emoji });
+      b.onclick = () => addToken({ kind:'char', name:it.name, color:m.color, emoji:m.emoji, ownerId: it.ownerId });
       list.appendChild(b);
     });
   } catch(e){ list.innerHTML = '<span class="muted">Não consegui carregar os Sinies agora.</span>'; }
 }
 
 /* ---- ADICIONAR TOKENS ---- */
-function addToken({ kind, name, color, emoji }){
-  const t = { id:uid(), kind, name:name||'', color:color||objColor, emoji:emoji||'', x:0.5, y:0.5, size:0.08 };
+function addToken({ kind, name, color, emoji, ownerId }){
+  const t = { id:uid(), kind, name:name||'', color:color||objColor, emoji:emoji||'', ownerId: ownerId||null, x:0.5, y:0.5, size:0.08 };
   scene.tokens.push(t); selectedId = t.id; render(); scheduleSave();
 }
 $('#addNpc').onclick = () => { const n=$('#charName').value.trim(); addToken({kind:'char', name:n||'Personagem', color:'#a855f7', emoji:'👤'}); $('#charName').value=''; };
