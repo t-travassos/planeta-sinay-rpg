@@ -302,19 +302,37 @@ const uid = () => 'x' + Math.random().toString(36).slice(2,9);
 const clamp01 = v => Math.max(0, Math.min(1, v));
 
 /* ---- SYNC ---- */
-function sceneRef(){ return doc(db, `artifacts/${appId}/public/data/scene/board`); }
+function sceneRef(){ return doc(db, `artifacts/${appId}/public/data/sheets/__MESA__`); }
 
+function scenePayload(){
+  // Guardado como uma "ficha" (unico caminho liberado pelas regras). Campos
+  // benignos evitam que o painel do Narrador quebre ao listar; os dados da
+  // cena ficam em tokens/strokes/bg.
+  return {
+    _mesa: true, ownerId: 'MESA-SYSTEM', shortId: 'MESA',
+    name: '\ud83c\udfac Tela da Mesa (nao e um Siny)', work: '', type: 'blindado',
+    infection: 0, corrupted: false,
+    life: { current: 1, max: 1 }, sanity: { current: 1, max: 1 },
+    attributes: { agilidade:0, blefe:0, poder:0, furtividade:0 },
+    skills: { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 },
+    bonusAttrPoints: 0, bonusTrainPoints: 0, items: [],
+    corruptedForm: { name:'', life:1, attributes:{agilidade:0,blefe:0,poder:0,furtividade:0}, ability:'' },
+    // dados reais da cena:
+    tokens: scene.tokens, strokes: scene.strokes, bg: scene.bg,
+    updatedAt: Date.now(), updatedBy: myUserId,
+  };
+}
+let lastSaveAt = 0;
 function scheduleSave(){
   if (!isGM) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    try {
-      await setDoc(sceneRef(), {
-        tokens: scene.tokens, strokes: scene.strokes, bg: scene.bg,
-        updatedAt: Date.now(), updatedBy: myUserId,
-      });
-    } catch(e){ console.warn('save falhou', e); }
-  }, 140);
+  const since = Date.now() - lastSaveAt;
+  const doSave = async () => {
+    lastSaveAt = Date.now();
+    try { await setDoc(sceneRef(), scenePayload()); }
+    catch(e){ console.warn('save falhou', e); }
+  };
+  if (since > 220) doSave(); else saveTimer = setTimeout(doSave, 220 - since);
 }
 
 async function boot(){
