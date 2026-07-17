@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planeta Sinay — Tela da Mesa (ao vivo)</title>
+<meta name="description" content="Tela compartilhada da mesa do Planeta Sinay RPG: o Mestre coloca personagens e desenha, e os jogadores veem tudo atualizando em tempo real." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --ink:#1e1b4b; --grape:#6d28d9; --neon:#7CFF4F; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family:'Fredoka',sans-serif; margin:0; min-height:100vh; color:var(--ink);
+    background:
+      radial-gradient(1100px 600px at 12% -8%, rgba(124,255,79,.10), transparent 60%),
+      radial-gradient(1000px 700px at 110% 10%, rgba(109,40,217,.35), transparent 55%),
+      #0d061f;
+    padding-bottom:24px;
+  }
+  header {
+    background:linear-gradient(180deg,#4c1d95,#6d28d9 70%,#5b21b6);
+    color:#fff; text-align:center; padding:22px 16px 26px; position:relative;
+    border-bottom:6px solid var(--neon);
+  }
+  header h1 { margin:0; font-size:1.7rem; text-shadow:3px 3px 0 var(--ink); }
+  header p { margin:.3rem 0 0; color:var(--neon); font-weight:600; font-size:.95rem; }
+
+  .btn {
+    font-family:inherit; font-weight:700; font-size:.9rem; cursor:pointer; text-decoration:none;
+    display:inline-flex; align-items:center; gap:7px; color:var(--ink);
+    background:#fff; border:3px solid var(--ink); border-radius:.8rem; box-shadow:4px 4px 0 var(--ink);
+    padding:9px 14px;
+  }
+  .btn:hover { filter:brightness(1.04); }
+  .btn:active { transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
+  .btn.neon { background:var(--neon); }
+  .btn.grape { background:var(--grape); color:#fff; }
+  .btn.rose { background:#fb7185; }
+  .btn.sm { font-size:.8rem; padding:7px 11px; box-shadow:3px 3px 0 var(--ink); }
+
+  .back-btn { position:fixed; top:14px; left:14px; z-index:120; background:var(--neon); }
+  @media (max-width:560px){ .back-btn { font-size:.8rem; padding:8px 12px; top:10px; left:10px; } }
+
+  .wrap { max-width:1180px; margin:22px auto 0; padding:0 14px; }
+
+  /* faixa de status */
+  .statusbar { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .pill { background:#fdfaf6; border:3px solid var(--ink); border-radius:.8rem; box-shadow:4px 4px 0 var(--ink);
+          padding:7px 14px; font-weight:600; font-size:.9rem; display:inline-flex; align-items:center; gap:8px; }
+  .dot { width:12px; height:12px; border-radius:50%; background:#9ca3af; display:inline-block; }
+  .dot.on { background:var(--neon); box-shadow:0 0 0 3px rgba(124,255,79,.35); }
+
+  /* TABULEIRO */
+  .board {
+    position:relative; width:100%; aspect-ratio:16/10; background:#0d061f;
+    border:5px solid var(--ink); border-radius:1.1rem; box-shadow:8px 8px 0 var(--ink);
+    overflow:hidden; touch-action:none; background-size:contain; background-position:center; background-repeat:no-repeat;
+  }
+  .board .draw-layer { position:absolute; inset:0; width:100%; height:100%; z-index:5; }
+  .board.drawing .draw-layer { cursor:crosshair; }
+  .board.erasing .draw-layer { cursor:cell; }
+  /* quando não é modo desenho, a camada de traços deixa o clique passar para tokens/board */
+  .board:not(.drawing):not(.erasing) .draw-layer { pointer-events:none; }
+
+  .token {
+    position:absolute; transform:translate(-50%,-50%); z-index:10;
+    display:flex; flex-direction:column; align-items:center; gap:3px; user-select:none;
+  }
+  .token .ball {
+    border-radius:50%; border:3px solid var(--ink); box-shadow:3px 3px 0 rgba(0,0,0,.35);
+    display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+  }
+  .token .name {
+    max-width:120px; font-size:.72rem; font-weight:700; color:#fff; text-align:center;
+    background:rgba(30,27,75,.85); border:2px solid var(--ink); border-radius:.5rem; padding:1px 6px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .gm .token .ball { cursor:grab; }
+  .gm .token.dragging .ball { cursor:grabbing; }
+  .token.sel .ball { outline:4px dashed #fff; outline-offset:2px; }
+
+  /* barra de seleção do token (só Mestre) */
+  .selbar { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:40;
+    display:none; gap:6px; background:rgba(30,27,75,.92); border:3px solid #fff; border-radius:.8rem; padding:6px 8px; }
+  .selbar.show { display:flex; }
+  .selbar button { font-family:inherit; font-weight:700; cursor:pointer; border:2px solid var(--ink);
+    border-radius:.5rem; padding:5px 9px; background:#fff; }
+
+  /* PAINEL DO MESTRE */
+  .gmpanel { display:none; margin-top:18px; background:#fdfaf6; border:4px solid var(--ink);
+    border-radius:1.1rem; box-shadow:6px 6px 0 var(--ink); overflow:hidden; }
+  body.gm .gmpanel { display:block; }
+  .gmpanel .head { background:var(--grape); color:#fff; font-weight:700; padding:10px 16px;
+    border-bottom:4px solid var(--ink); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .gmpanel .head .tag { margin-left:auto; font-size:.7rem; background:var(--neon); color:var(--ink);
+    border:2px solid var(--ink); border-radius:.5rem; padding:2px 8px; }
+  .tabs { display:flex; gap:6px; padding:10px 12px 0; flex-wrap:wrap; }
+  .tab { font-family:inherit; font-weight:700; cursor:pointer; border:3px solid var(--ink);
+    border-bottom:none; border-radius:.7rem .7rem 0 0; padding:8px 13px; background:#efe7ff; }
+  .tab.active { background:#fff; }
+  .panes { border-top:3px solid var(--ink); }
+  .pane { display:none; padding:14px 16px; }
+  .pane.active { display:block; }
+  .muted { color:#6b7280; font-size:.85rem; margin:0 0 10px; }
+
+  .swatches { display:flex; flex-wrap:wrap; gap:10px; }
+  .swatch { width:44px; height:44px; border-radius:50%; border:3px solid var(--ink);
+    box-shadow:3px 3px 0 var(--ink); cursor:pointer; }
+  .swatch:active { transform:translate(3px,3px); box-shadow:0 0 0 var(--ink); }
+  .swatch.sel { outline:4px dashed var(--grape); outline-offset:2px; }
+
+  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+  input[type=text]{ font-family:inherit; font-size:.95rem; padding:8px 10px; border:3px solid var(--ink);
+    border-radius:.6rem; box-shadow:3px 3px 0 var(--ink); min-width:150px; }
+
+  .chars { display:flex; flex-wrap:wrap; gap:10px; }
+  .charbtn { display:flex; align-items:center; gap:8px; cursor:pointer; background:#fff;
+    border:3px solid var(--ink); border-radius:.7rem; box-shadow:3px 3px 0 var(--ink); padding:7px 11px; font-weight:600; }
+  .charbtn:active { transform:translate(3px,3px); box-shadow:0 0 0 var(--ink); }
+  .charbtn .mini { width:22px; height:22px; border-radius:50%; border:2px solid var(--ink);
+    display:inline-flex; align-items:center; justify-content:center; font-size:.85rem; }
+
+  .pens { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .pen { width:34px; height:34px; border-radius:50%; border:3px solid var(--ink); box-shadow:2px 2px 0 var(--ink); cursor:pointer; }
+  .pen.sel { outline:3px dashed var(--ink); outline-offset:2px; }
+
+  footer { text-align:center; color:rgba(255,255,255,.4); font-size:.8rem; margin-top:26px; }
+
+  /* MODAL SENHA */
+  .modal { position:fixed; inset:0; z-index:200; background:rgba(13,6,31,.9);
+    display:none; align-items:center; justify-content:center; padding:18px; }
+  .modal.open { display:flex; }
+  .modal .box { background:#fdfaf6; border:5px solid var(--ink); border-radius:1.1rem;
+    box-shadow:8px 8px 0 var(--ink); padding:22px; max-width:360px; width:100%; text-align:center; }
+  .modal h3 { margin:0 0 6px; }
+  .modal input { width:100%; text-align:center; margin:12px 0; }
+  .err { color:#dc2626; font-weight:700; font-size:.85rem; min-height:1em; }
+</style>
+</head>
+<body>
+<a href="index.html" class="btn back-btn" aria-label="Voltar para a ficha do Siny">⬅ Voltar pra Ficha</a>
+
+<header>
+  <h1>🎬 Tela da Mesa — Planeta Sinay</h1>
+  <p>O Mestre monta a cena · os jogadores veem ao vivo</p>
+</header>
+
+<div class="wrap">
+  <div class="statusbar">
+    <span class="pill"><span class="dot" id="connDot"></span><span id="connText">Conectando…</span></span>
+    <span class="pill" id="rolewatch">👀 Você está vendo a mesa ao vivo</span>
+    <button class="btn sm grape" id="gmBtn">🛡️ Mesa do Narrador</button>
+    <button class="btn sm rose" id="gmExit" style="display:none">Sair do modo Mestre</button>
+  </div>
+
+  <div class="board" id="board">
+    <svg class="draw-layer" id="drawLayer" viewBox="0 0 1000 1000" preserveAspectRatio="none"></svg>
+    <div class="selbar" id="selbar">
+      <button id="selBigger">🔎 Maior</button>
+      <button id="selSmaller">🔬 Menor</button>
+      <button id="selDelete">🗑️ Tirar</button>
+    </div>
+  </div>
+
+  <!-- ============ PAINEL PRIVADO DO MESTRE ============ -->
+  <div class="gmpanel">
+    <div class="head">🎛️ Painel do Mestre <span class="muted" style="color:#e9d5ff;margin:0">só você vê isto</span>
+      <span class="tag">privado</span></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="chars">🧑‍🚀 Personagens</button>
+      <button class="tab" data-tab="obj">🟣 Objetos</button>
+      <button class="tab" data-tab="draw">✏️ Desenhar</button>
+      <button class="tab" data-tab="bg">🗺️ Fundo</button>
+    </div>
+    <div class="panes">
+      <!-- PERSONAGENS -->
+      <div class="pane active" data-pane="chars">
+        <p class="muted">Clique num Siny pra colocar ele na tela. Ele aparece pra todo mundo na hora.</p>
+        <div class="chars" id="charsList"><span class="muted">Carregando Sinies…</span></div>
+        <div class="row">
+          <input type="text" id="charName" placeholder="Personagem do Mestre (ex.: Chefão da gosma)" />
+          <button class="btn sm" id="addNpc">+ Colocar na tela</button>
+        </div>
+      </div>
+      <!-- OBJETOS -->
+      <div class="pane" data-pane="obj">
+        <p class="muted">Escolha a cor e clique em "Colocar" — vira uma bolinha na tela pra representar um objeto, inimigo ou marcador.</p>
+        <div class="swatches" id="objSwatches"></div>
+        <div class="row">
+          <input type="text" id="objName" placeholder="Nome (opcional)" />
+          <input type="text" id="objEmoji" placeholder="Emoji (opcional) 🔥" style="min-width:90px" />
+          <button class="btn sm" id="addObj">+ Colocar na tela</button>
+        </div>
+      </div>
+      <!-- DESENHAR -->
+      <div class="pane" data-pane="draw">
+        <p class="muted">Ligue o lápis e desenhe direto na tela. Todo mundo vê o desenho aparecer.</p>
+        <div class="row">
+          <button class="btn sm" id="penToggle">✏️ Lápis: desligado</button>
+          <button class="btn sm" id="eraseToggle">🧽 Borracha: desligada</button>
+          <button class="btn sm rose" id="clearDraw">Apagar desenhos</button>
+        </div>
+        <div class="row">
+          <span style="font-weight:700">Cor:</span>
+          <div class="pens" id="penColors"></div>
+          <span style="font-weight:700;margin-left:6px">Grossura:</span>
+          <input type="range" id="penSize" min="4" max="30" value="10" />
+        </div>
+      </div>
+      <!-- FUNDO -->
+      <div class="pane" data-pane="bg">
+        <p class="muted">Coloque um mapa ou uma cor de fundo na tela.</p>
+        <div class="row" id="bgMaps"></div>
+        <div class="row">
+          <span style="font-weight:700">Cor:</span>
+          <div class="pens" id="bgColors"></div>
+          <button class="btn sm rose" id="bgClear">Sem fundo</button>
+        </div>
+      </div>
+    </div>
+    <div class="head" style="background:#5b21b6"><button class="btn sm rose" id="clearAll">🧹 Limpar a tela toda</button>
+      <span class="tag">cuidado</span></div>
+  </div>
+</div>
+
+<footer>Planeta Sinay RPG · Tela da Mesa em tempo real · feito para jogar à distância</footer>
+
+<!-- MODAL SENHA -->
+<div class="modal" id="pwModal">
+  <div class="box">
+    <h3>🛡️ Mesa do Narrador</h3>
+    <p class="muted" style="margin:0">Digite a senha de Mestre pra poder montar a cena.</p>
+    <input type="password" id="pwInput" placeholder="senha…" />
+    <div class="err" id="pwErr"></div>
+    <div class="row" style="justify-content:center">
+      <button class="btn sm grape" id="pwOk">Entrar</button>
+      <button class="btn sm" id="pwCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* ============================================================
+   PLANETA SINAY RPG — Tela da Mesa (cena compartilhada ao vivo)
+   Mesmo Firebase da ficha. Só o Mestre escreve; jogadores leem.
+   ============================================================ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* ---- CONFIG (igual à da ficha) ---- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDnT7fclcC193oHIYgbROyyqXlrxY3uIhU",
+  authDomain: "planeta-sinay.firebaseapp.com",
+  projectId: "planeta-sinay",
+  storageBucket: "planeta-sinay.firebasestorage.app",
+  messagingSenderId: "891876799316",
+  appId: "1:891876799316:web:10081d423333bd9f0dcec1",
+  measurementId: "G-JM0KXMTX7R",
+};
+const appId = 'planeta-sinay-rpg';
+const GM_PASSWORD = 'inay1234';
+
+const TYPE_META = {
+  blindado:   { emoji:'🛡️', color:'#7c3aed' },
+  obcecado:   { emoji:'🎯', color:'#f97316' },
+  desgastado: { emoji:'💤', color:'#64748b' },
+  explosivo:  { emoji:'💥', color:'#ef4444' },
+  sonhador:   { emoji:'💭', color:'#38bdf8' },
+};
+const OBJ_COLORS = ['#FF3EA5','#A6E22E','#FF7A18','#38bdf8','#ef4444','#7c3aed','#ffd166','#22c55e','#ffffff','#1e1b4b'];
+const PEN_COLORS = ['#1e1b4b','#ef4444','#7CFF4F','#38bdf8','#ffd166','#FF3EA5','#ffffff'];
+const BG_COLORS  = ['#0d061f','#fdfaf6','#0d2417','#20143a'];
+const BG_MAPS = [
+  { k:'maps/estado.svg',        name:'🗺️ Vale Sinay' },
+  { k:'maps/fabrilandia.svg',   name:'🏭 Fabrilândia' },
+  { k:'maps/vila-aconchego.svg',name:'🌾 Vila Aconchego' },
+  { k:'maps/sinopolis.svg',     name:'🏙️ Sinópolis' },
+];
+
+/* ---- ESTADO ---- */
+let db=null, auth=null, myUserId=null;
+let scene = { tokens:[], strokes:[], bg:{ type:'none' } };
+let isGM = sessionStorage.getItem('sinay-gm-active') === '1';
+let busy = false;             // arrastando/desenhando: ignora echo do snapshot
+let selectedId = null;
+let mode = 'move';            // 'move' | 'draw' | 'erase'
+let penColor = PEN_COLORS[0];
+let penSize = 10;
+let objColor = OBJ_COLORS[0];
+let saveTimer = null;
+
+const $ = s => document.querySelector(s);
+const board = $('#board');
+const drawLayer = $('#drawLayer');
+const selbar = $('#selbar');
+const uid = () => 'x' + Math.random().toString(36).slice(2,9);
+const clamp01 = v => Math.max(0, Math.min(1, v));
+
+/* ---- SYNC ---- */
+function sceneRef(){ return doc(db, `artifacts/${appId}/public/data/sheets/MESA-CENA`); }
+
+function scenePayload(){
+  // Guardado como uma "ficha" (unico caminho liberado pelas regras). Campos
+  // benignos evitam que o painel do Narrador quebre ao listar; os dados da
+  // cena ficam em tokens/strokes/bg.
+  return {
+    _mesa: true, ownerId: 'MESA-SYSTEM', shortId: 'MESA',
+    name: '\ud83c\udfac Tela da Mesa (nao e um Siny)', work: '', type: 'blindado',
+    infection: 0, corrupted: false,
+    life: { current: 1, max: 1 }, sanity: { current: 1, max: 1 },
+    attributes: { agilidade:0, blefe:0, poder:0, furtividade:0 },
+    skills: { adestramento:0, investigacao:0, medico:0, percepcao:0, fisico:0, combate:0, reflexos:0, mecanica:0 },
+    bonusAttrPoints: 0, bonusTrainPoints: 0, items: [],
+    corruptedForm: { name:'', life:1, attributes:{agilidade:0,blefe:0,poder:0,furtividade:0}, ability:'' },
+    // dados reais da cena:
+    tokens: scene.tokens, strokes: scene.strokes, bg: scene.bg,
+    updatedAt: Date.now(), updatedBy: myUserId,
+  };
+}
+let lastSaveAt = 0;
+function scheduleSave(){
+  if (!isGM) return;
+  clearTimeout(saveTimer);
+  const since = Date.now() - lastSaveAt;
+  const doSave = async () => {
+    lastSaveAt = Date.now();
+    try { await setDoc(sceneRef(), scenePayload()); }
+    catch(e){ console.warn('save falhou', e); }
+  };
+  if (since > 220) doSave(); else saveTimer = setTimeout(doSave, 220 - since);
+}
+
+async function boot(){
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app); db = getFirestore(app);
+    onAuthStateChanged(auth, (u) => {
+      if (u){ myUserId = u.uid; setConn(true); startScene(); if(isGM) loadChars(); }
+    });
+    await signInAnonymously(auth);
+  } catch(e){
+    console.error(e); setConn(false, 'Erro de conexão');
+  }
+  applyRole();
+}
+
+function startScene(){
+  // primeiro carrega o que existe, depois assina em tempo real
+  onSnapshot(sceneRef(), (snap) => {
+    if (busy) return;                       // não atropela um arrasto/desenho em andamento
+    if (snap.exists()){
+      const d = snap.data();
+      scene = {
+        tokens: Array.isArray(d.tokens) ? d.tokens : [],
+        strokes: Array.isArray(d.strokes) ? d.strokes : [],
+        bg: d.bg || { type:'none' },
+      };
+    } else {
+      scene = { tokens:[], strokes:[], bg:{ type:'none' } };
+    }
+    render();
+  }, (err) => { console.warn(err); setConn(false, 'Sem permissão / offline'); });
+}
+
+function setConn(on, txt){
+  $('#connDot').classList.toggle('on', !!on);
+  $('#connText').textContent = txt || (on ? 'Conectado — ao vivo' : 'Desconectado');
+}
+
+/* ---- RENDER ---- */
+function render(){
+  // fundo
+  if (scene.bg && scene.bg.type === 'map' && BG_MAPS.some(m => m.k === scene.bg.key)){
+    // só aceita chaves da lista conhecida (o valor vem do Firestore)
+    board.style.background = '#20143a';
+    board.style.backgroundImage = `url("${scene.bg.key}")`;
+    board.style.backgroundSize = 'contain';
+    board.style.backgroundPosition = 'center';
+    board.style.backgroundRepeat = 'no-repeat';
+  } else if (scene.bg && scene.bg.type === 'color'){
+    board.style.background = safeColor(scene.bg.color, '#0d061f'); board.style.backgroundImage='';
+  } else {
+    board.style.background = '#0d061f'; board.style.backgroundImage='';
+  }
+  renderStrokes();
+  renderTokens();
+}
+
+function renderStrokes(){
+  let svg = '';
+  (scene.strokes||[]).forEach(st => {
+    if (!st.pts || st.pts.length < 1) return;
+    const pts = st.pts.map(p => `${(Number(p[0])*1000||0).toFixed(1)},${(Number(p[1])*1000||0).toFixed(1)}`).join(' ');
+    // id/cor/largura vêm do Firestore: escapa o id, valida a cor e força número.
+    svg += `<polyline data-id="${escapeHtml(String(st.id||''))}" points="${pts}" fill="none" stroke="${safeColor(st.color, PEN_COLORS[0])}" stroke-width="${Number(st.w)||10}" stroke-linecap="round" stroke-linejoin="round" ${mode==='erase'?'style="cursor:cell;pointer-events:stroke"':''}/>`;
+  });
+  // preserva o traço temporário se estiver desenhando
+  const tmp = drawLayer.querySelector('#tmpStroke');
+  drawLayer.innerHTML = svg;
+  if (tmp) drawLayer.appendChild(tmp);
+  if (mode === 'erase'){
+    drawLayer.querySelectorAll('polyline').forEach(pl => {
+      pl.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        const id = pl.getAttribute('data-id');
+        scene.strokes = scene.strokes.filter(s => s.id !== id);
+        render(); scheduleSave();
+      });
+    });
+  }
+}
+
+function renderTokens(){
+  board.querySelectorAll('.token').forEach(n => n.remove());
+  const w = board.clientWidth;
+  (scene.tokens||[]).forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'token' + (t.id===selectedId ? ' sel' : '');
+    el.style.left = (clamp01(t.x)*100) + '%';
+    el.style.top  = (clamp01(t.y)*100) + '%';
+    const size = Math.max(28, (t.size||0.08) * w);
+    // Construído com APIs de DOM (não innerHTML): emoji/nome viram texto puro e
+    // a cor é validada, então dados vindos do Firestore não podem injetar HTML.
+    const ball = document.createElement('div');
+    ball.className = 'ball';
+    ball.style.width = size + 'px';
+    ball.style.height = size + 'px';
+    ball.style.background = safeColor(t.color, OBJ_COLORS[0]);
+    ball.style.fontSize = (size*0.5) + 'px';
+    ball.textContent = t.emoji || '';
+    el.appendChild(ball);
+    if (t.name){
+      const nm = document.createElement('div');
+      nm.className = 'name';
+      nm.textContent = t.name;
+      el.appendChild(nm);
+    }
+    if (isGM) attachTokenDrag(el, t);
+    board.appendChild(el);
+  });
+  positionSelbar();
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* Só deixa passar cores CSS seguras (hex / rgb / hsl / nome). Qualquer coisa
+   com aspas, '<', ';' ou parênteses fora de rgb()/hsl() cai no fallback —
+   impede injeção via campos de cor vindos do Firestore. */
+function safeColor(c, fallback){
+  const v = String(c == null ? '' : c).trim();
+  if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
+  if (/^rgba?\(\s*[\d.,%\s/]+\)$/.test(v)) return v;
+  if (/^hsla?\(\s*[\d.,%\s/deg]+\)$/.test(v)) return v;
+  if (/^[a-zA-Z]{1,20}$/.test(v)) return v;
+  return fallback;
+}
+
+/* ---- POSIÇÃO relativa ao tabuleiro ---- */
+function evtToFrac(e){
+  const r = board.getBoundingClientRect();
+  return { x: clamp01((e.clientX - r.left)/r.width), y: clamp01((e.clientY - r.top)/r.height) };
+}
+
+/* ---- ARRASTAR TOKENS (só Mestre, modo move) ---- */
+function attachTokenDrag(el, t){
+  const ball = el.querySelector('.ball');
+  ball.addEventListener('pointerdown', (e) => {
+    if (mode !== 'move') return;
+    e.preventDefault(); e.stopPropagation();
+    selectedId = t.id; busy = true; el.classList.add('dragging');
+    board.querySelectorAll('.token').forEach(n=>n.classList.remove('sel')); el.classList.add('sel');
+    positionSelbar();
+    try { ball.setPointerCapture(e.pointerId); } catch(_){}
+    const move = (ev) => {
+      const f = evtToFrac(ev); t.x = f.x; t.y = f.y;
+      el.style.left = (t.x*100)+'%'; el.style.top = (t.y*100)+'%';
+      positionSelbar();
+      scheduleSave();
+    };
+    const up = () => {
+      ball.removeEventListener('pointermove', move);
+      ball.removeEventListener('pointerup', up);
+      el.classList.remove('dragging'); busy = false; scheduleSave();
+    };
+    ball.addEventListener('pointermove', move);
+    ball.addEventListener('pointerup', up);
+  });
+}
+
+/* ---- BARRA DE SELEÇÃO ---- */
+function positionSelbar(){
+  const t = scene.tokens.find(x => x.id===selectedId);
+  if (!t || !isGM || mode!=='move'){ selbar.classList.remove('show'); return; }
+  selbar.classList.add('show');
+}
+$('#selBigger').onclick = () => { const t=sel(); if(t){ t.size=Math.min(0.28,(t.size||0.08)+0.02); render(); scheduleSave(); } };
+$('#selSmaller').onclick = () => { const t=sel(); if(t){ t.size=Math.max(0.04,(t.size||0.08)-0.02); render(); scheduleSave(); } };
+$('#selDelete').onclick = () => { const t=sel(); if(t){ scene.tokens=scene.tokens.filter(x=>x.id!==t.id); selectedId=null; render(); scheduleSave(); } };
+function sel(){ return scene.tokens.find(x => x.id===selectedId); }
+
+board.addEventListener('pointerdown', (e) => {
+  if (mode==='move' && e.target.closest('.token')==null && e.target.closest('.selbar')==null){
+    selectedId=null; board.querySelectorAll('.token').forEach(n=>n.classList.remove('sel')); selbar.classList.remove('show');
+  }
+});
+
+/* ---- DESENHAR ---- */
+let curStroke = null, tmpEl = null;
+drawLayer.addEventListener('pointerdown', (e) => {
+  if (!isGM || mode!=='draw') return;
+  e.preventDefault();
+  busy = true;
+  const f = evtToFrac(e);
+  curStroke = { id:uid(), color:penColor, w:penSize, pts:[[f.x,f.y]] };
+  tmpEl = document.createElementNS('http://www.w3.org/2000/svg','polyline');
+  tmpEl.setAttribute('id','tmpStroke');
+  tmpEl.setAttribute('fill','none'); tmpEl.setAttribute('stroke',penColor);
+  tmpEl.setAttribute('stroke-width',penSize); tmpEl.setAttribute('stroke-linecap','round'); tmpEl.setAttribute('stroke-linejoin','round');
+  drawLayer.appendChild(tmpEl);
+  try { drawLayer.setPointerCapture(e.pointerId); } catch(_){}
+});
+drawLayer.addEventListener('pointermove', (e) => {
+  if (!curStroke) return;
+  const f = evtToFrac(e); curStroke.pts.push([f.x,f.y]);
+  tmpEl.setAttribute('points', curStroke.pts.map(p=>`${(p[0]*1000).toFixed(1)},${(p[1]*1000).toFixed(1)}`).join(' '));
+});
+function endStroke(){
+  if (!curStroke) return;
+  if (curStroke.pts.length > 1) scene.strokes.push(curStroke);
+  curStroke = null; if (tmpEl){ tmpEl.remove(); tmpEl=null; }
+  busy = false; render(); scheduleSave();
+}
+drawLayer.addEventListener('pointerup', endStroke);
+drawLayer.addEventListener('pointercancel', endStroke);
+
+/* ---- SENHA / MODO MESTRE ---- */
+$('#gmBtn').onclick = () => { $('#pwErr').textContent=''; $('#pwInput').value=''; $('#pwModal').classList.add('open'); setTimeout(()=>$('#pwInput').focus(),50); };
+$('#pwCancel').onclick = () => $('#pwModal').classList.remove('open');
+$('#pwOk').onclick = tryPw;
+$('#pwInput').addEventListener('keydown', e => { if(e.key==='Enter') tryPw(); });
+function tryPw(){
+  if ($('#pwInput').value === GM_PASSWORD){
+    isGM = true; sessionStorage.setItem('sinay-gm-active','1');
+    $('#pwModal').classList.remove('open'); applyRole(); loadChars(); render();
+  } else { $('#pwErr').textContent = 'Senha incorreta!'; }
+}
+$('#gmExit').onclick = () => { isGM=false; sessionStorage.removeItem('sinay-gm-active'); mode='move'; selectedId=null; applyRole(); render(); };
+
+function applyRole(){
+  document.body.classList.toggle('gm', isGM);
+  $('#gmBtn').style.display = isGM ? 'none' : '';
+  $('#gmExit').style.display = isGM ? '' : 'none';
+  $('#rolewatch').innerHTML = isGM ? '🎛️ Você é o <b style="margin-left:4px">Mestre</b> — monte a cena abaixo' : '👀 Você está vendo a mesa ao vivo';
+}
+
+/* ---- CARREGAR PERSONAGENS (Sinies) ---- */
+async function loadChars(){
+  const list = $('#charsList');
+  if (!db){ return; }
+  try {
+    const snap = await getDocs(collection(db, `artifacts/${appId}/public/data/sheets`));
+    const items = [];
+    snap.forEach(d => {
+      const s=d.data();
+      if (d.id === 'MESA-CENA' || s._mesa) return;  // a própria cena não é um personagem
+      items.push({ name: s.name || ('SINY-'+(s.shortId||'?')), type: s.type||'blindado' });
+    });
+    if (!items.length){ list.innerHTML = '<span class="muted">Nenhum Siny criado ainda. Crie fichas primeiro ou use os Objetos.</span>'; return; }
+    list.innerHTML = '';
+    items.forEach(it => {
+      const m = TYPE_META[it.type] || TYPE_META.blindado;
+      const b = document.createElement('button');
+      b.className = 'charbtn';
+      b.innerHTML = `<span class="mini" style="background:${m.color}">${m.emoji}</span>${escapeHtml(it.name)}`;
+      b.onclick = () => addToken({ kind:'char', name:it.name, color:m.color, emoji:m.emoji });
+      list.appendChild(b);
+    });
+  } catch(e){ list.innerHTML = '<span class="muted">Não consegui carregar os Sinies agora.</span>'; }
+}
+
+/* ---- ADICIONAR TOKENS ---- */
+function addToken({ kind, name, color, emoji }){
+  const t = { id:uid(), kind, name:name||'', color:color||objColor, emoji:emoji||'', x:0.5, y:0.5, size:0.08 };
+  scene.tokens.push(t); selectedId = t.id; render(); scheduleSave();
+}
+$('#addNpc').onclick = () => { const n=$('#charName').value.trim(); addToken({kind:'char', name:n||'Personagem', color:'#a855f7', emoji:'👤'}); $('#charName').value=''; };
+$('#addObj').onclick = () => { addToken({ kind:'obj', name:$('#objName').value.trim(), color:objColor, emoji:$('#objEmoji').value.trim() }); $('#objName').value=''; $('#objEmoji').value=''; };
+
+/* ---- PALETAS ---- */
+function buildSwatches(){
+  const wrap = $('#objSwatches'); wrap.innerHTML='';
+  OBJ_COLORS.forEach((c,i) => {
+    const s = document.createElement('div'); s.className='swatch'+(i===0?' sel':''); s.style.background=c;
+    s.onclick = () => { objColor=c; wrap.querySelectorAll('.swatch').forEach(x=>x.classList.remove('sel')); s.classList.add('sel'); };
+    wrap.appendChild(s);
+  });
+  const pc = $('#penColors'); pc.innerHTML='';
+  PEN_COLORS.forEach((c,i) => {
+    const p = document.createElement('div'); p.className='pen'+(i===0?' sel':''); p.style.background=c;
+    p.onclick = () => { penColor=c; pc.querySelectorAll('.pen').forEach(x=>x.classList.remove('sel')); p.classList.add('sel'); };
+    pc.appendChild(p);
+  });
+  const bc = $('#bgColors'); bc.innerHTML='';
+  BG_COLORS.forEach(c => {
+    const p = document.createElement('div'); p.className='pen'; p.style.background=c;
+    p.onclick = () => { scene.bg={type:'color', color:c}; render(); scheduleSave(); };
+    bc.appendChild(p);
+  });
+  const bm = $('#bgMaps'); bm.innerHTML='';
+  BG_MAPS.forEach(mp => {
+    const b = document.createElement('button'); b.className='btn sm'; b.textContent=mp.name;
+    b.onclick = () => { scene.bg={type:'map', key:mp.k}; render(); scheduleSave(); };
+    bm.appendChild(b);
+  });
+}
+$('#bgClear').onclick = () => { scene.bg={type:'none'}; render(); scheduleSave(); };
+
+/* ---- DESENHO: controles ---- */
+$('#penToggle').onclick = () => {
+  mode = (mode==='draw') ? 'move' : 'draw';
+  $('#penToggle').textContent = mode==='draw' ? '✏️ Lápis: LIGADO' : '✏️ Lápis: desligado';
+  $('#eraseToggle').textContent = '🧽 Borracha: desligada';
+  board.classList.toggle('drawing', mode==='draw'); board.classList.remove('erasing');
+  selbar.classList.remove('show'); renderStrokes();
+};
+$('#eraseToggle').onclick = () => {
+  mode = (mode==='erase') ? 'move' : 'erase';
+  $('#eraseToggle').textContent = mode==='erase' ? '🧽 Borracha: LIGADA' : '🧽 Borracha: desligada';
+  $('#penToggle').textContent = '✏️ Lápis: desligado';
+  board.classList.toggle('erasing', mode==='erase'); board.classList.remove('drawing');
+  selbar.classList.remove('show'); renderStrokes();
+};
+$('#clearDraw').onclick = () => { scene.strokes=[]; render(); scheduleSave(); };
+$('#penSize').addEventListener('input', e => { penSize = +e.target.value; });
+$('#clearAll').onclick = () => {
+  if (confirm('Tirar TODOS os personagens e desenhos da tela?')){
+    scene.tokens=[]; scene.strokes=[]; scene.bg={type:'none'}; selectedId=null; render(); scheduleSave();
+  }
+};
+
+/* ---- ABAS DO PAINEL ---- */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`.pane[data-pane="${tab.dataset.tab}"]`).classList.add('active');
+  };
+});
+
+/* ---- redimensionar: recalcula tamanho dos tokens ---- */
+window.addEventListener('resize', () => { renderTokens(); });
+
+/* ---- START ---- */
+buildSwatches();
+applyRole();
+boot();
+</script>
+</body>
+</html>
