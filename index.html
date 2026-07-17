@@ -1,7 +1,3 @@
-https://raw.githubusercontent.com/t-travassos/planeta-sinay-rpg/main/index.html
-→ https://raw.githubusercontent.com/t-travassos/planeta-sinay-rpg/main/index.html
-Content-Type: text/plain; charset=utf-8
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -250,12 +246,11 @@ Content-Type: text/plain; charset=utf-8
     </span>
   </a>
 
-  <!-- ================= CHAMADA PARA A TELA DA MESA ================= -->
   <a href="cena.html" target="_blank" rel="noopener"
      class="cartoon block bg-ink text-white p-3 sm:p-4 text-center font-bold hover:brightness-110 active:translate-x-1 active:translate-y-1 transition">
     <span class="inline-flex items-center justify-center gap-2 text-base sm:text-lg flex-wrap">
       <i data-lucide="clapperboard" class="w-6 h-6"></i>
-      🎬 Entre na <span class="text-neon">Tela da Mesa ao vivo</span> — o Mestre monta a cena e todos veem
+      Entre na Tela da Mesa ao vivo
     </span>
   </a>
 
@@ -1611,4 +1606,307 @@ async function doGive(all) {
   };
   const targets = all ? Object.keys(gmSheets) : (giveTargetId ? [giveTargetId] : []);
   let ok = 0;
-  for (const id of targets) { if 
+  for (const id of targets) { if (await giveItemTo(id, { ...base })) ok++; }
+  $('#giveModal').classList.add('hidden-i');
+  renderGmList();
+  toast(all ? `Entregue a ${ok} Sinies! 🎁` : 'Item entregue! 🎁');
+}
+
+function renderInventory(force) {
+  const wrap = $('#inventoryList');
+  if (!wrap) return;
+  // não reconstrói enquanto o usuário digita aqui (preserva o foco/cursor)
+  if (!force && wrap.contains(document.activeElement)) return;
+  const items = Array.isArray(state.items) ? state.items : [];
+  const canEdit = isGM && !readOnly;   // só o Mestre edita/cria itens
+  if (!items.length) {
+    wrap.innerHTML = canEdit
+      ? '<p class="text-sm text-ink/50 font-semibold">Mochila vazia. Use os botões acima para adicionar um Item 🎒 ou um Amuleto 🔮.</p>'
+      : '<p class="text-sm text-ink/50 font-semibold">Mochila vazia — os itens e amuletos são concedidos pelo Mestre. 🎁</p>';
+    return;
+  }
+
+  if (!canEdit) {
+    // visão do jogador: somente leitura
+    wrap.innerHTML = items.map((it) => {
+      const amul = it.kind === 'amuleto';
+      const photo = (it.photo && AVATAR_DATA_RE.test(it.photo)) ? `<img src="${it.photo}" class="w-full h-full object-cover">` : (amul ? '🔮' : '🎒');
+      return `
+      <div class="cartoon-sm ${amul ? 'bg-violet-50' : 'bg-amber-50'} p-3 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-white overflow-hidden flex items-center justify-center text-xl shrink-0" style="border:3px solid var(--ink)">${photo}</div>
+        <div class="min-w-0">
+          <div class="font-bold text-ink truncate">${escapeHtml(it.name || '(sem nome)')}${amul ? '' : ` <span class="text-ink/50 text-sm">x${(+it.qty || 1)}</span>`}</div>
+          ${it.desc ? `<div class="text-sm font-semibold text-grape truncate">${escapeHtml(it.desc)}</div>` : ''}
+        </div>
+        <span class="ml-auto text-xs font-bold ${amul ? 'text-violet-700' : 'text-amber-700'}">${amul ? '🔮 Amuleto' : '🎒 Item'}</span>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // visão do Mestre: editável
+  wrap.innerHTML = items.map((it, i) => {
+    const amul = it.kind === 'amuleto';
+    return `
+    <div class="cartoon-sm ${amul ? 'bg-violet-50' : 'bg-amber-50'} p-3" data-inv="${i}">
+      <div class="flex items-center gap-2 flex-wrap">
+        <button class="cartoon-btn bg-white p-0 w-11 h-11 overflow-hidden flex items-center justify-center text-lg leading-none" data-inv-photo="${i}" title="Foto do item">${it.photo && AVATAR_DATA_RE.test(it.photo) ? `<img src="${it.photo}" class="w-full h-full object-cover">` : '📷'}</button>
+        <button class="cartoon-btn bg-paper px-2 py-1 text-xl leading-none" data-inv-kind="${i}" title="Alternar Item/Amuleto">${amul ? '🔮' : '🎒'}</button>
+        <input class="cartoon-input px-3 py-1.5 grow min-w-[8rem]" data-inv-name="${i}" value="${escapeHtml(it.name)}" placeholder="${amul ? 'Nome do amuleto' : 'Nome do item'}" />
+        ${amul ? '' : `<input type="number" min="1" class="cartoon-input px-2 py-1.5 w-16 text-center" data-inv-qty="${i}" value="${(+it.qty || 1)}" title="Quantidade" />`}
+        <button class="cartoon-btn bg-rose-300 px-2.5 py-1.5" data-inv-del="${i}" aria-label="Remover">✕</button>
+      </div>
+      <input class="cartoon-input px-3 py-1.5 w-full mt-2 text-sm" data-inv-desc="${i}" value="${escapeHtml(it.desc)}" placeholder="${amul ? 'Efeito mágico do amuleto…' : 'Para que serve / descrição…'}" />
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-inv-name]').forEach(el =>
+    el.addEventListener('input', () => { state.items[+el.dataset.invName].name = el.value; persistSoft(); }));
+  wrap.querySelectorAll('[data-inv-desc]').forEach(el =>
+    el.addEventListener('input', () => { state.items[+el.dataset.invDesc].desc = el.value; persistSoft(); }));
+  wrap.querySelectorAll('[data-inv-qty]').forEach(el =>
+    el.addEventListener('change', () => { state.items[+el.dataset.invQty].qty = Math.max(1, +el.value || 1); persistSoft(); }));
+  wrap.querySelectorAll('[data-inv-kind]').forEach(el =>
+    el.addEventListener('click', () => { if (guard()) return; const it = state.items[+el.dataset.invKind]; it.kind = it.kind === 'amuleto' ? 'item' : 'amuleto'; persist(); renderInventory(true); }));
+  wrap.querySelectorAll('[data-inv-del]').forEach(el =>
+    el.addEventListener('click', () => { if (guard()) return; state.items.splice(+el.dataset.invDel, 1); commit(); renderInventory(true); }));
+  wrap.querySelectorAll('[data-inv-photo]').forEach(el =>
+    el.addEventListener('click', () => { if (guard()) return; pendingItemPhoto = +el.dataset.invPhoto; $('#itemPhotoFile').click(); }));
+}
+
+/* ---------- Compartilhar ---------- */
+function shareUrl() {
+  const base = location.origin + location.pathname;
+  return `${base}?siny=${encodeURIComponent(activeDocId)}`;
+}
+function openShare() {
+  const url = shareUrl();
+  $('#shareLink').value = url;
+  const msg = `🪐 *Planeta Sinay RPG* 🪐\n` +
+    `Veja a ficha do meu Siny *${state.name || 'sem nome'}* (${state.shortId})!\n` +
+    `${TYPES[state.type].emoji} ${TYPES[state.type].name} · ❤️ ${state.life.current}/${state.life.max} · 🧠 ${state.sanity.current}/${state.sanity.max} · ☣️ ${state.infection}%\n` +
+    `👉 ${url}`;
+  $('#shareMsg').value = msg;
+  $('#waLink').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  $('#shareModal').classList.remove('hidden-i');
+}
+
+/* ---------- Clonar (espectador -> minha ficha) ---------- */
+async function cloneSheet() {
+  if (mode !== 'cloud') { toast('Clonar exige conexão com o Planeta (Firebase).'); return; }
+  const ok = await confirmModal('Clonar este Siny?', 'Uma cópia editável será criada na sua lista de Sinies.');
+  if (!ok) return;
+  const id = await uniqueShortId();
+  const copyState = cleanSheet(state);
+  copyState.ownerId = myUserId;
+  copyState.shortId = id;
+  try {
+    await setDoc(sheetRef(id), copyState, { merge: false });
+    rosterUpsert(id, copyState.name, copyState.type);
+    history.replaceState(null, '', location.origin + location.pathname);
+    readOnly = false; gmEditing = false;
+    await openSiny(id);
+    toast('Siny clonado para a sua lista!');
+  } catch (e) { console.error(e); toast('Erro ao clonar.'); }
+}
+
+/* ---------- Carregamento rápido por ID curto ---------- */
+async function quickLoad() {
+  let code = $('#loadIdInput').value.trim().toUpperCase();
+  if (!code) return;
+  if (mode !== 'cloud') { toast('Busca por ID exige conexão com o Planeta.'); return; }
+  if (!code.startsWith('SINY-')) code = 'SINY-' + code;
+  try {
+    const snap = await getDoc(sheetRef(code));
+    if (!snap.exists()) { toast('Nenhum Siny com esse ID.'); return; }
+    location.href = location.origin + location.pathname + '?siny=' + encodeURIComponent(code);
+  } catch (e) { console.error(e); toast('Erro na busca.'); }
+}
+
+/* ---------- 10. PAINEL DO NARRADOR ---------- */
+function setGmMode(on) {
+  isGM = on;
+  if (on) sessionStorage.setItem('sinay-gm-active', '1');
+  else sessionStorage.removeItem('sinay-gm-active');
+  applyGmUi();
+}
+function applyGmUi() {
+  document.body.classList.toggle('is-gm', isGM);
+  const a = $('#addItemBtn'), b = $('#addAmuletoBtn');
+  if (a) a.classList.toggle('hidden-i', !isGM);
+  if (b) b.classList.toggle('hidden-i', !isGM);
+  renderInventory(true);
+  renderCorruptedForm();
+}
+
+function tryGmEnter() {
+  const pass = $('#gmPass').value;
+  if (pass !== GM_PASSWORD) { $('#gmPassErr').classList.remove('hidden-i'); shake($('#gmPass')); return; }
+  $('#gmPassErr').classList.add('hidden-i');
+  $('#gmPass').value = '';
+  $('#gmGate').classList.add('hidden-i');
+  setGmMode(true);   // vira Mestre pela sessão (até fechar a aba)
+  openGmHub();
+}
+
+function openGmHub() {
+  $('#gmHub').classList.remove('hidden-i');
+  if (mode === 'cloud') {
+    if (unsubGm) unsubGm();
+    unsubGm = onSnapshot(sheetsCol(), (snap) => {
+      gmSheets = {};
+      snap.forEach(d => { gmSheets[d.id] = d.data(); });
+      renderGmList();
+    }, (e)=>{ console.error(e); });
+  } else {
+    const idx = JSON.parse(localStorage.getItem(LS_INDEX) || '[]');
+    gmSheets = {};
+    idx.forEach(id => { const r = localStorage.getItem(sheetKey(id)); if (r) gmSheets[id] = JSON.parse(r); });
+    renderGmList();
+  }
+}
+
+function renderGmList() {
+  const ids = Object.keys(gmSheets);
+  const wrap = $('#gmList');
+  if (!ids.length) { wrap.innerHTML = `<p class="text-ink/60 font-semibold text-center py-6">Nenhum Siny ativo na mesa ainda.</p>`; return; }
+  wrap.innerHTML = ids.map(id => {
+    const s = gmSheets[id];
+    const t = TYPES[s.type] || TYPES.blindado;
+    const corrupted = meetsCorruption(s) || s.corrupted;
+    return `
+    <div class="cartoon-sm ${corrupted?'bg-red-100':'bg-white'} p-3">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-2xl">${corrupted?'☣️':t.emoji}</span>
+          <div class="min-w-0">
+            <div class="font-bold text-ink truncate">${escapeHtml(s.name || 'Siny sem nome')} ${corrupted?'<span class="text-red-600">(Corrompido!)</span>':''}</div>
+            <div class="text-xs font-semibold text-ink/60">${escapeHtml(s.shortId || id.slice(0,10))} · ${escapeHtml(s.work||'—')}</div>
+          </div>
+        </div>
+        <div class="flex gap-2 text-xs font-bold flex-wrap">
+          <span class="px-2 py-0.5 rounded-lg bg-rose-100 border-2 border-ink">❤️ ${s.life?.current ?? '?'}</span>
+          <span class="px-2 py-0.5 rounded-lg bg-sky-100 border-2 border-ink">🧠 ${s.sanity?.current ?? '?'}</span>
+          <span class="px-2 py-0.5 rounded-lg bg-emerald-100 border-2 border-ink">☣️ ${s.infection ?? 0}%</span>
+          <span class="px-2 py-0.5 rounded-lg bg-violet-100 border-2 border-ink">✦ +${(+s.bonusAttrPoints||0)} atr · +${(+s.bonusTrainPoints||0)} trn</span>
+          <span class="px-2 py-0.5 rounded-lg bg-amber-100 border-2 border-ink">🎒 ${Array.isArray(s.items)?s.items.length:0}</span>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-3 flex-wrap">
+        <button class="cartoon-btn bg-rose-300 px-2.5 py-1 text-xs" data-gm="dano" data-id="${id}">Dano −10 ❤️</button>
+        <button class="cartoon-btn bg-sky-300 px-2.5 py-1 text-xs" data-gm="panico" data-id="${id}">Pânico −10 🧠</button>
+        <button class="cartoon-btn bg-emerald-300 px-2.5 py-1 text-xs" data-gm="gosma" data-id="${id}">Gosma +10 ☣️</button>
+      </div>
+      <div class="flex gap-2 mt-2 flex-wrap items-center">
+        <span class="text-xs font-bold text-grape">Pontos extras:</span>
+        <button class="cartoon-btn bg-violet-200 px-2.5 py-1 text-xs" data-gm="attrp" data-id="${id}">Atrib +1</button>
+        <button class="cartoon-btn bg-violet-100 px-2.5 py-1 text-xs" data-gm="attrm" data-id="${id}">Atrib −1</button>
+        <button class="cartoon-btn bg-emerald-200 px-2.5 py-1 text-xs" data-gm="trainp" data-id="${id}">Treino +1</button>
+        <button class="cartoon-btn bg-emerald-100 px-2.5 py-1 text-xs" data-gm="trainm" data-id="${id}">Treino −1</button>
+      </div>
+      <div class="flex gap-2 mt-2 flex-wrap">
+        <button class="cartoon-btn bg-emerald-200 px-2.5 py-1 text-xs" data-gm="dar" data-id="${id}">🎁 Dar Item</button>
+        <button class="cartoon-btn bg-amber-200 px-2.5 py-1 text-xs" data-gm="abrir" data-id="${id}">Abrir Ficha</button>
+        <button class="cartoon-btn bg-red-400 px-2.5 py-1 text-xs" data-gm="del" data-id="${id}">Deletar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-gm]').forEach(b => b.addEventListener('click', () => gmAction(b.dataset.gm, b.dataset.id)));
+}
+
+async function gmAction(act, id) {
+  const s = gmSheets[id];
+  if (!s) return;
+  if (act === 'abrir') {
+    stopGmHub();
+    $('#gmHub').classList.add('hidden-i');
+    await loadDoc(id, { gmFlag: id !== myUserId });
+    return;
+  }
+  if (act === 'dar') { openGiveModal(id); return; }
+  if (act === 'del') {
+    const ok = await confirmModal('Deletar ficha?', `Remover ${s.name || s.shortId || id} permanentemente da mesa?`);
+    if (!ok) return;
+    if (mode === 'cloud') {
+      try { await deleteDoc(sheetRef(id)); toast('Ficha deletada.'); }
+      catch(e){ console.error(e); toast('Erro ao deletar.'); }
+    } else {
+      localStorage.removeItem(sheetKey(id));
+      const idx = JSON.parse(localStorage.getItem(LS_INDEX)||'[]').filter(x=>x!==id);
+      localStorage.setItem(LS_INDEX, JSON.stringify(idx));
+      delete gmSheets[id]; renderGmList(); toast('Ficha deletada.');
+    }
+    return;
+  }
+  // efeitos
+  const upd = {};
+  if (act === 'dano')   upd.life   = { current: clamp((s.life?.current??0) - 10, 0, s.life?.max ?? 999),   max: s.life?.max ?? 100 };
+  if (act === 'panico') upd.sanity = { current: clamp((s.sanity?.current??0) - 10, 0, s.sanity?.max ?? 999), max: s.sanity?.max ?? 100 };
+  if (act === 'gosma')  upd.infection = clamp((s.infection??0) + 10, 0, 100);
+  if (act === 'attrp')  upd.bonusAttrPoints  = (+s.bonusAttrPoints  || 0) + 1;
+  if (act === 'attrm')  upd.bonusAttrPoints  = Math.max(0, (+s.bonusAttrPoints  || 0) - 1);
+  if (act === 'trainp') upd.bonusTrainPoints = (+s.bonusTrainPoints || 0) + 1;
+  if (act === 'trainm') upd.bonusTrainPoints = Math.max(0, (+s.bonusTrainPoints || 0) - 1);
+  // recalcula corrupção
+  const newSan = (upd.sanity ? upd.sanity.current : s.sanity?.current) ?? 100;
+  const newInf = (upd.infection !== undefined ? upd.infection : s.infection) ?? 0;
+  if (newSan <= SANITY_MIN || newInf >= INFECTION_MAX) upd.corrupted = true;
+  upd.updatedAt = Date.now();
+
+  if (mode === 'cloud') {
+    try {
+      await setDoc(sheetRef(id), upd, { merge:true });
+      gmSheets[id] = { ...s, ...upd };   // atualização otimista: cliques rápidos não perdem
+      renderGmList();
+    } catch(e){ console.error(e); toast('Erro.'); }
+  } else {
+    const merged = { ...s, ...upd };
+    localStorage.setItem(sheetKey(id), JSON.stringify(merged));
+    gmSheets[id] = merged;
+    if (id === activeDocId) { mergeIntoState(merged); checkTransformation(); update(); }
+    renderGmList();
+  }
+}
+
+/* ---------- helpers ---------- */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function copy(text){ if(navigator.clipboard) navigator.clipboard.writeText(text).catch(()=>fallbackCopy(text)); else fallbackCopy(text); }
+function fallbackCopy(text){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy');}catch(e){} ta.remove(); }
+
+/* ---------- 11. BOOT ---------- */
+async function boot() {
+  buildStatics();
+  bindEvents();
+  applyGmUi();   // aplica o Modo Mestre salvo na sessão (se houver)
+
+  if (CONFIGURED) await initFirebase();
+  else startLocal();
+
+  // Roster deste dispositivo (local + nuvem)
+  loadRosterLocal();
+  if (mode === 'cloud') await loadRosterCloud();
+
+  const params = new URLSearchParams(location.search);
+  const spectate = params.get('siny');
+  if (spectate) {
+    if (roster.some(r => r.id === spectate)) {
+      // é meu: abre editável e limpa a URL
+      history.replaceState(null, '', location.origin + location.pathname);
+      await openSiny(spectate);
+    } else {
+      await loadDoc(spectate, { readOnlyFlag: true });   // de outra pessoa: espectador
+    }
+  } else {
+    const active = localStorage.getItem(activeKey());
+    if (active && roster.some(r => r.id === active)) await openSiny(active);
+    else await ensureSomeSiny();
+  }
+  renderRoster();
+  update();
+}
+
+boot();
+</script>
+</body>
+</html>
