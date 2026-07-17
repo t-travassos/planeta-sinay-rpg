@@ -375,14 +375,15 @@ function setConn(on, txt){
 /* ---- RENDER ---- */
 function render(){
   // fundo
-  if (scene.bg && scene.bg.type === 'map'){
+  if (scene.bg && scene.bg.type === 'map' && BG_MAPS.some(m => m.k === scene.bg.key)){
+    // só aceita chaves da lista conhecida (o valor vem do Firestore)
     board.style.background = '#20143a';
     board.style.backgroundImage = `url("${scene.bg.key}")`;
     board.style.backgroundSize = 'contain';
     board.style.backgroundPosition = 'center';
     board.style.backgroundRepeat = 'no-repeat';
   } else if (scene.bg && scene.bg.type === 'color'){
-    board.style.background = scene.bg.color; board.style.backgroundImage='';
+    board.style.background = safeColor(scene.bg.color, '#0d061f'); board.style.backgroundImage='';
   } else {
     board.style.background = '#0d061f'; board.style.backgroundImage='';
   }
@@ -394,8 +395,9 @@ function renderStrokes(){
   let svg = '';
   (scene.strokes||[]).forEach(st => {
     if (!st.pts || st.pts.length < 1) return;
-    const pts = st.pts.map(p => `${(p[0]*1000).toFixed(1)},${(p[1]*1000).toFixed(1)}`).join(' ');
-    svg += `<polyline data-id="${st.id}" points="${pts}" fill="none" stroke="${st.color}" stroke-width="${st.w||10}" stroke-linecap="round" stroke-linejoin="round" ${mode==='erase'?'style="cursor:cell;pointer-events:stroke"':''}/>`;
+    const pts = st.pts.map(p => `${(Number(p[0])*1000||0).toFixed(1)},${(Number(p[1])*1000||0).toFixed(1)}`).join(' ');
+    // id/cor/largura vêm do Firestore: escapa o id, valida a cor e força número.
+    svg += `<polyline data-id="${escapeHtml(String(st.id||''))}" points="${pts}" fill="none" stroke="${safeColor(st.color, PEN_COLORS[0])}" stroke-width="${Number(st.w)||10}" stroke-linecap="round" stroke-linejoin="round" ${mode==='erase'?'style="cursor:cell;pointer-events:stroke"':''}/>`;
   });
   // preserva o traço temporário se estiver desenhando
   const tmp = drawLayer.querySelector('#tmpStroke');
@@ -422,9 +424,22 @@ function renderTokens(){
     el.style.left = (clamp01(t.x)*100) + '%';
     el.style.top  = (clamp01(t.y)*100) + '%';
     const size = Math.max(28, (t.size||0.08) * w);
-    el.innerHTML =
-      `<div class="ball" style="width:${size}px;height:${size}px;background:${t.color};font-size:${size*0.5}px">${t.emoji||''}</div>` +
-      (t.name ? `<div class="name">${escapeHtml(t.name)}</div>` : '');
+    // Construído com APIs de DOM (não innerHTML): emoji/nome viram texto puro e
+    // a cor é validada, então dados vindos do Firestore não podem injetar HTML.
+    const ball = document.createElement('div');
+    ball.className = 'ball';
+    ball.style.width = size + 'px';
+    ball.style.height = size + 'px';
+    ball.style.background = safeColor(t.color, OBJ_COLORS[0]);
+    ball.style.fontSize = (size*0.5) + 'px';
+    ball.textContent = t.emoji || '';
+    el.appendChild(ball);
+    if (t.name){
+      const nm = document.createElement('div');
+      nm.className = 'name';
+      nm.textContent = t.name;
+      el.appendChild(nm);
+    }
     if (isGM) attachTokenDrag(el, t);
     board.appendChild(el);
   });
@@ -432,6 +447,18 @@ function renderTokens(){
 }
 
 function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* Só deixa passar cores CSS seguras (hex / rgb / hsl / nome). Qualquer coisa
+   com aspas, '<', ';' ou parênteses fora de rgb()/hsl() cai no fallback —
+   impede injeção via campos de cor vindos do Firestore. */
+function safeColor(c, fallback){
+  const v = String(c == null ? '' : c).trim();
+  if (/^#[0-9a-fA-F]{3,8}$/.test(v)) return v;
+  if (/^rgba?\(\s*[\d.,%\s/]+\)$/.test(v)) return v;
+  if (/^hsla?\(\s*[\d.,%\s/deg]+\)$/.test(v)) return v;
+  if (/^[a-zA-Z]{1,20}$/.test(v)) return v;
+  return fallback;
+}
 
 /* ---- POSIÇÃO relativa ao tabuleiro ---- */
 function evtToFrac(e){
