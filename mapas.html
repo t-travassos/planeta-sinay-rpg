@@ -72,10 +72,25 @@
     border:3px solid var(--ink); border-radius:.7rem; box-shadow:4px 4px 0 var(--ink); padding:9px 16px; color:var(--ink);
     display:inline-flex; align-items:center; gap:6px; }
   .lb-btn:active { transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
+
+  /* botão voltar (cabeçalho) */
+  .back-btn {
+    position:absolute; top:14px; left:14px;
+    font-family:inherit; font-weight:700; font-size:.9rem; text-decoration:none; cursor:pointer;
+    background:#7CFF4F; color:var(--ink);
+    border:3px solid var(--ink); border-radius:.7rem; box-shadow:4px 4px 0 var(--ink);
+    padding:8px 14px; display:inline-flex; align-items:center; gap:6px;
+  }
+  .back-btn:active { transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
+  @media (max-width:560px){
+    .back-btn { position:static; display:inline-flex; margin-bottom:12px; }
+    header { padding-top:16px; }
+  }
 </style>
 </head>
 <body>
 <header>
+  <a href="index.html" class="back-btn">← Voltar</a>
   <h1>🗺️ Mapas do Planeta Sinay</h1>
   <p>Vale Sinay · Temporada 1 — a gosma vaza da fábrica e toma o estado</p>
 </header>
